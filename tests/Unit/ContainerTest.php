@@ -4,20 +4,20 @@ namespace Luizfilipezs\Container\Tests\Unit;
 
 use Luizfilipezs\Container\Container;
 use Luizfilipezs\Container\Exceptions\ContainerException;
-use Luizfilipezs\Container\Tests\Data\{
-    ClassWithDeepDependencies,
-    ClassWithDependencies,
-    ClassWithoutDependencies,
-    LazyClass,
-    LazyClassWithDeepDependencies,
-    ObjectWithParamInjection,
-};
+use Luizfilipezs\Container\Tests\Data\ObjectWithoutConstructor;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 
 final class ContainerTest extends TestCase
 {
-    private Container $container;
+    /**
+     * Dependency injection container.
+     */
+    private ?Container $container;
 
+    /**
+     * {@inheritdoc}
+     */
     public function setUp(): void
     {
         parent::setUp();
@@ -25,79 +25,86 @@ final class ContainerTest extends TestCase
         $this->container = new Container();
     }
 
-    public function testGetClassWithNoDependencies(): void
+    /**
+     * {@inheritdoc}
+     */
+    public function tearDown(): void
     {
-        $instance = $this->container->get(ClassWithoutDependencies::class);
+        parent::tearDown();
 
-        $this->assertInstanceOf(ClassWithoutDependencies::class, $instance);
+        $this->container = null;
     }
 
-    public function testGetClassWithoutDeepDependencies(): void
+    public function testGetClassStringDefinition(): void
     {
-        $instance = $this->container->get(ClassWithDependencies::class);
+        $this->container->set(ObjectWithoutConstructor::class);
 
-        $this->assertInstanceOf(ClassWithDependencies::class, $instance);
+        $this->assertInstanceOf(
+            ObjectWithoutConstructor::class,
+            $this->container->get(ObjectWithoutConstructor::class),
+        );
     }
 
-    public function testGetClassWithDeepDependencies(): void
+    public function testGetInvalidClassStringDefinition(): void
     {
-        $instance = $this->container->get(ClassWithDeepDependencies::class);
-
-        $this->assertInstanceOf(ClassWithDeepDependencies::class, $instance);
-    }
-
-    public function testGetLazyClass(): void
-    {
-        // Should not throw an exception because __contruct is not called yet
-        $lazyInstance = $this->container->get(LazyClass::class);
-
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('Lazy constructor called.');
-
-        // Should throw an exception because __contruct is finally called
-        $lazyInstance->foo;
-    }
-
-    public function testGetLazyClassWithDeepDependencies(): void
-    {
-        $lazyInstance = $this->container->get(LazyClassWithDeepDependencies::class);
-
-        try {
-            $lazyInstance->getLazyDependency();
-            $this->fail('Instance constructed with no expected exception.');
-        } catch (\Exception $e) {
-            $this->assertSame('Lazy constructor called.', $e->getMessage());
-        }
-
-        try {
-            $lazyInstance->getLazyDependency()->foo;
-            $this->fail('Instance\'s lazy dependency constructed with no expected exception.');
-        } catch (\Exception $e) {
-            $this->assertSame('Lazy constructor called.', $e->getMessage());
-        }
-    }
-
-    public function testParameterInjection(): void
-    {
-        $this->container->setValue('Param1', 'abc');
-        $this->container->setValue('Param2', '123');
-
-        $instance = $this->container->get(ObjectWithParamInjection::class);
-
-        $this->assertSame('abc', $instance->a);
-        $this->assertSame('123', $instance->b);
-    }
-
-    public function testParameterInjectionWhenValueTypeIsInvalid(): void
-    {
-        $this->container->setValue('Param1', 'abc'); // valid
-        $this->container->setValue('Param2', ['123']); // invalid; parameter type is string
+        $this->container->set(ObjectWithoutConstructor::class, 'invalid');
 
         $this->expectException(ContainerException::class);
         $this->expectExceptionMessage(
-            'Container cannot inject Param2. It is not the same type as the parameter.',
+            sprintf(
+                'Container definition for %s is a string, but it is not a valid class name.',
+                ObjectWithoutConstructor::class,
+            ),
         );
 
-        $this->container->get(ObjectWithParamInjection::class);
+        $this->container->get(ObjectWithoutConstructor::class);
+    }
+
+    public function testGetCallableDefinition(): void
+    {
+        $instance = new ObjectWithoutConstructor();
+        $this->container->set(ObjectWithoutConstructor::class, fn() => $instance);
+
+        $this->assertSame($instance, $this->container->get(ObjectWithoutConstructor::class));
+    }
+
+    public function testGetInvalidCallableDefinition(): void
+    {
+        $instance = new stdClass();
+        $this->container->set(ObjectWithoutConstructor::class, fn() => $instance);
+
+        $this->expectException(ContainerException::class);
+        $this->expectExceptionMessage(
+            sprintf(
+                'Container definition for %s is a callable that does not return an instance of the expected class.',
+                ObjectWithoutConstructor::class,
+            ),
+        );
+
+        $this->container->get(ObjectWithoutConstructor::class);
+    }
+
+    public function testGetObjectDefinition(): void
+    {
+        $instance = new ObjectWithoutConstructor();
+        $this->container->set(ObjectWithoutConstructor::class, $instance);
+
+        $this->assertSame($instance, $this->container->get(ObjectWithoutConstructor::class));
+    }
+
+    public function testGetInvalidObjectDefinition(): void
+    {
+        $instance = new stdClass();
+        $this->container->set(ObjectWithoutConstructor::class, $instance);
+
+        $this->expectException(ContainerException::class);
+        $this->expectExceptionMessage(
+            sprintf(
+                'Container definition for %s is an object, but it is not an instance of the same class.',
+                ObjectWithoutConstructor::class,
+            ),
+        );
+
+        $this->container->get(ObjectWithoutConstructor::class);
     }
 }
