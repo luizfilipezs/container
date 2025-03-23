@@ -2,9 +2,9 @@
 
 namespace Luizfilipezs\Container\Tests\Data;
 
-use Luizfilipezs\Container\Attributes\LazyGhost;
+use Luizfilipezs\Container\Attributes\Lazy;
 
-#[LazyGhost]
+#[Lazy]
 class LazyClassWithDeepDependencies
 {
     public function __construct(

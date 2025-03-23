@@ -2,7 +2,7 @@
 
 namespace Luizfilipezs\Container;
 
-use Luizfilipezs\Container\Attributes\{Inject, LazyGhost, Singleton};
+use Luizfilipezs\Container\Attributes\{Inject, Lazy, Singleton};
 use Luizfilipezs\Container\Exceptions\ContainerException;
 use ReflectionClass;
 use ReflectionParameter;
@@ -116,7 +116,7 @@ class Container
 
     private function isLazy(ReflectionClass $reflectionClass): bool
     {
-        return $this->hasAttribute($reflectionClass, LazyGhost::class);
+        return $this->hasAttribute($reflectionClass, Lazy::class);
     }
 
     private function isSingleton(ReflectionClass $reflectionClass): bool
