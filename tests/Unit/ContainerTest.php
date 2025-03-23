@@ -12,7 +12,7 @@ use Luizfilipezs\Container\Tests\Data\Singleton\SingletonObject;
 use Luizfilipezs\Container\Tests\Data\{
     ObjectWithDeepDependencies,
     ObjectWithDependencies,
-    ObjectWithInjectedParam,
+    ObjectWithInjectedParams,
     ObjectWithLazyDependency,
     ObjectWithSingletonDependency,
     ObjectWithoutConstructor,
@@ -311,8 +311,32 @@ final class ContainerTest extends TestCase
     public function testGetObjectWithInjectedParam(): void
     {
         $this->container->setValue('NAME', 'John');
-        $instance = $this->container->get(ObjectWithInjectedParam::class);
+        $this->container->setValue('AGE', 30);
+
+        $instance = $this->container->get(ObjectWithInjectedParams::class);
 
         $this->assertEquals('John', $instance->name);
+        $this->assertEquals(30, $instance->age);
+    }
+
+    public function testGetObjectWithInjectedParamAndInvalidType(): void
+    {
+        $this->container->setValue('NAME', 123);
+        $this->container->setValue('AGE', 30);
+
+        $this->expectException(ContainerException::class);
+        $this->expectExceptionMessage(
+            'Container cannot inject "NAME". It is not the same type as the parameter. Expected string, got integer.',
+        );
+
+        $this->container->get(ObjectWithInjectedParams::class);
+    }
+
+    public function testGetObjectWithInjectedParamAndNoDefinition(): void
+    {
+        $this->expectException(ContainerException::class);
+        $this->expectExceptionMessage('Container cannot inject "NAME". It is not defined.');
+
+        $this->container->get(ObjectWithInjectedParams::class);
     }
 }

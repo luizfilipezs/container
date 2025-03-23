@@ -423,13 +423,14 @@ class Container
                 continue;
             }
 
-            if (!class_exists($paramType)) {
-                throw new ContainerException(
-                    "Container cannot inject {$paramType}. It is not a class or does not exist.",
-                );
+            if (class_exists($paramType)) {
+                $arguments[] = $this->get($paramType);
+                continue;
             }
 
-            $arguments[] = $this->get($paramType);
+            throw new ContainerException(
+                "Container cannot inject {$paramType}. It is not a valid class name and has no injection configuration.",
+            );
         }
 
         return $arguments;
@@ -461,10 +462,19 @@ class Container
             );
         }
 
+        $typeMap = [
+            'integer' => 'int',
+            'boolean' => 'bool',
+            'double'  => 'float',
+            'NULL'    => 'null'
+        ];
+        
         $paramType = $param->getType()->getName();
         $valueType = gettype($value);
 
-        if ($paramType !== $valueType) {
+        $normalizedValueType = $typeMap[$valueType] ?? $valueType;
+        
+        if ($paramType !== $normalizedValueType) {
             throw new ContainerException(
                 sprintf(
                     'Container cannot inject "%s". It is not the same type as the parameter. Expected %s, got %s.',
