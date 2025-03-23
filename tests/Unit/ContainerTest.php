@@ -5,6 +5,7 @@ namespace Luizfilipezs\Container\Tests\Unit;
 use Luizfilipezs\Container\Container;
 use Luizfilipezs\Container\Exceptions\ContainerException;
 use Luizfilipezs\Container\Tests\Data\ObjectWithoutConstructor;
+use Luizfilipezs\Container\Tests\Data\Singleton\SingletonObject;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -150,5 +151,13 @@ final class ContainerTest extends TestCase
         );
 
         $this->container->get($invalidClassName);
+    }
+
+    public function testGetSingleton(): void
+    {
+        $obj1 = $this->container->get(SingletonObject::class);
+        $obj2 = $this->container->get(SingletonObject::class);
+
+        $this->assertSame($obj1, $obj2);
     }
 }
