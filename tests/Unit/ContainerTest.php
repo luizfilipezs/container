@@ -264,4 +264,46 @@ final class ContainerTest extends TestCase
         $singletonInstance = $this->container->get(SingletonObject::class);
         $this->assertSame($singletonInstance, $instance->singletonDep);
     }
+
+    public function testHasValue(): void
+    {
+        $this->assertFalse($this->container->hasValue('KEY'));
+        $this->container->setValue('KEY', 'VALUE');
+        $this->assertTrue($this->container->hasValue('KEY'));
+    }
+
+    public function testGetValue(): void
+    {
+        $this->container->setValue('KEY', 'VALUE');
+        $this->assertSame('VALUE', $this->container->getValue('KEY'));
+    }
+
+    public function testGetUnsetValueWithStrictOption(): void
+    {
+        $container = new Container(strict: true);
+
+        $this->expectException(ContainerException::class);
+        $this->expectExceptionMessage('KEY has no definition.');
+
+        $container->getValue('KEY');
+    }
+
+    public function testGetNullValueWithStrictOption(): void
+    {
+        $container = new Container(strict: true);
+        $container->setValue('KEY', null);
+
+        $this->expectException(ContainerException::class);
+        $this->expectExceptionMessage('KEY has no definition.');
+
+        $container->getValue('KEY');
+    }
+
+    public function testRemoveValue(): void
+    {
+        $this->container->setValue('KEY', 'VALUE');
+        $this->assertSame('VALUE', $this->container->getValue('KEY'));
+        $this->container->removeValue('KEY');
+        $this->assertFalse($this->container->hasValue('KEY'));
+    }
 }
