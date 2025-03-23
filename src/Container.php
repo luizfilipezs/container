@@ -440,17 +440,18 @@ class Container
      */
     private function getParamValueFromDefinition(ReflectionParameter $param): mixed
     {
-        $injectAttribute = $param->getAttributes(Inject::class)[0]?->newInstance();
+        $injectAttribute = $param->getAttributes(Inject::class)[0] ?? null;
 
         if ($injectAttribute === null) {
             return null;
         }
 
-        $value = $this->getValue($injectAttribute->identifier);
+        $identifier = $injectAttribute->newInstance()->identifier;
+        $value = $this->getValue($identifier);
 
         if ($value === null) {
             throw new ContainerException(
-                "Container cannot inject \"{$injectAttribute->identifier}\". It is not defined.",
+                "Container cannot inject \"{$identifier}\". It is not defined.",
             );
         }
 
@@ -461,7 +462,7 @@ class Container
             throw new ContainerException(
                 sprintf(
                     'Container cannot inject "%s". It is not the same type as the parameter. Expected %s, got %s.',
-                    $injectAttribute->identifier,
+                    $identifier,
                     $paramType,
                     $valueType,
                 ),
