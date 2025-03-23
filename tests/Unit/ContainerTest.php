@@ -35,6 +35,21 @@ final class ContainerTest extends TestCase
         $this->container = null;
     }
 
+    public function testHas(): void
+    {
+        $this->assertFalse($this->container->has(ObjectWithoutConstructor::class));
+        $this->container->set(ObjectWithoutConstructor::class);
+        $this->assertTrue($this->container->has(ObjectWithoutConstructor::class));
+    }
+
+    public function testRemove(): void
+    {
+        $this->container->set(ObjectWithoutConstructor::class);
+        $this->assertTrue($this->container->has(ObjectWithoutConstructor::class));
+        $this->container->remove(ObjectWithoutConstructor::class);
+        $this->assertFalse($this->container->has(ObjectWithoutConstructor::class));
+    }
+
     public function testGetClassStringDefinition(): void
     {
         $this->container->set(ObjectWithoutConstructor::class);
