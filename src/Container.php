@@ -461,20 +461,11 @@ class Container
                 "Container cannot inject \"{$identifier}\". It is not defined.",
             );
         }
-
-        $typeMap = [
-            'integer' => 'int',
-            'boolean' => 'bool',
-            'double'  => 'float',
-            'NULL'    => 'null'
-        ];
         
         $paramType = $param->getType()->getName();
-        $valueType = gettype($value);
-
-        $normalizedValueType = $typeMap[$valueType] ?? $valueType;
+        $valueType = $this->normalizeType(gettype($value));
         
-        if ($paramType !== $normalizedValueType) {
+        if ($paramType !== $valueType) {
             throw new ContainerException(
                 sprintf(
                     'Container cannot inject "%s". It is not the same type as the parameter. Expected %s, got %s.',
@@ -486,5 +477,21 @@ class Container
         }
 
         return $value;
+    }
+
+    /**
+     * Normalizes a type (i.e. converts "integer" to "int").
+     * 
+     * @param string $type Type.
+     */
+    private function normalizeType(string $type): string
+    {
+        return match ($type) {
+            'integer' => 'int',
+            'boolean' => 'bool',
+            'double'  => 'float',
+            'NULL'    => 'null',
+            default   => $type,
+        };
     }
 }

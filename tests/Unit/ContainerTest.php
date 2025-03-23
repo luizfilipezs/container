@@ -326,7 +326,7 @@ final class ContainerTest extends TestCase
 
         $this->expectException(ContainerException::class);
         $this->expectExceptionMessage(
-            'Container cannot inject "NAME". It is not the same type as the parameter. Expected string, got integer.',
+            'Container cannot inject "NAME". It is not the same type as the parameter. Expected string, got int.',
         );
 
         $this->container->get(ObjectWithInjectedParams::class);
