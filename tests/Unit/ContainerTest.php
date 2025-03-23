@@ -12,6 +12,7 @@ use Luizfilipezs\Container\Tests\Data\Singleton\SingletonObject;
 use Luizfilipezs\Container\Tests\Data\{
     ObjectWithDeepDependencies,
     ObjectWithDependencies,
+    ObjectWithInjectedParam,
     ObjectWithLazyDependency,
     ObjectWithSingletonDependency,
     ObjectWithoutConstructor,
@@ -305,5 +306,13 @@ final class ContainerTest extends TestCase
         $this->assertSame('VALUE', $this->container->getValue('KEY'));
         $this->container->removeValue('KEY');
         $this->assertFalse($this->container->hasValue('KEY'));
+    }
+
+    public function testGetObjectWithInjectedParam(): void
+    {
+        $this->container->setValue('NAME', 'John');
+        $instance = $this->container->get(ObjectWithInjectedParam::class);
+
+        $this->assertEquals('John', $instance->name);
     }
 }
