@@ -7,9 +7,15 @@ use Luizfilipezs\Container\Enums\EventName;
 use Luizfilipezs\Container\Events\EventHandler;
 use Luizfilipezs\Container\Exceptions\ContainerException;
 use Luizfilipezs\Container\Interfaces\EventHandlerInterface;
-use Luizfilipezs\Container\Tests\Data\Lazy\{LazyObject, LazyObjectWithouConstructor};
-use Luizfilipezs\Container\Tests\Data\ObjectWithoutConstructor;
+use Luizfilipezs\Container\Tests\Data\Lazy\{LazyObject, LazyObjectWithoutConstructor};
 use Luizfilipezs\Container\Tests\Data\Singleton\SingletonObject;
+use Luizfilipezs\Container\Tests\Data\{
+    ObjectWithDeepDependencies,
+    ObjectWithDependencies,
+    ObjectWithLazyDependency,
+    ObjectWithSingletonDependency,
+    ObjectWithoutConstructor,
+};
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -26,6 +32,8 @@ final class ContainerTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
+
+        error_reporting(E_ALL); // show warnings
 
         $this->container = new Container();
     }
@@ -193,16 +201,67 @@ final class ContainerTest extends TestCase
         $this->assertTrue($constructed);
     }
 
-    public function testGetLazyObjectWithouConstructor(): void
+    public function testGetLazyObjectWithoutConstructor(): void
     {
         $this->expectException(ContainerException::class);
         $this->expectExceptionMessage(
             sprintf(
                 'Lazy class %s has no constructor. Only classes with a constructor can be lazy.',
-                LazyObjectWithouConstructor::class,
+                LazyObjectWithoutConstructor::class,
             ),
         );
 
-        $this->container->get(LazyObjectWithouConstructor::class);
+        $this->container->get(LazyObjectWithoutConstructor::class);
+    }
+
+    public function testGetObjectWithDependencies(): void
+    {
+        $instance = $this->container->get(ObjectWithDependencies::class);
+
+        $this->assertInstanceOf(ObjectWithDependencies::class, $instance);
+        $this->assertInstanceOf(ObjectWithoutConstructor::class, $instance->dep1);
+        $this->assertInstanceOf(ObjectWithoutConstructor::class, $instance->dep2);
+    }
+
+    public function testGetObjectWithDeepDependencies(): void
+    {
+        $instance = $this->container->get(ObjectWithDeepDependencies::class);
+
+        $this->assertInstanceOf(ObjectWithDeepDependencies::class, $instance);
+        $this->assertInstanceOf(ObjectWithDependencies::class, $instance->dep1);
+        $this->assertInstanceOf(ObjectWithDependencies::class, $instance->dep2);
+    }
+
+    public function testGetObjectWithLazyDependency(): void
+    {
+        $instance = $this->container->get(ObjectWithLazyDependency::class);
+        $depConstructed = false;
+
+        $eventHandler = $this->container->get(EventHandler::class);
+        $eventHandler->on(
+            event: EventName::LAZY_CLASS_CONSTRUCTED->value,
+            callback: function () use (&$depConstructed) {
+                $depConstructed = true;
+            },
+        );
+
+        $this->assertInstanceOf(ObjectWithLazyDependency::class, $instance);
+        $this->assertInstanceOf(LazyObject::class, $instance->lazyDep);
+        $this->assertFalse($depConstructed);
+
+        $instance->lazyDep->foo;
+
+        $this->assertTrue($depConstructed);
+    }
+
+    public function testGetObjectWithSingletonDependency(): void
+    {
+        $instance = $this->container->get(ObjectWithSingletonDependency::class);
+
+        $this->assertInstanceOf(ObjectWithSingletonDependency::class, $instance);
+        $this->assertInstanceOf(SingletonObject::class, $instance->singletonDep);
+
+        $singletonInstance = $this->container->get(SingletonObject::class);
+        $this->assertSame($singletonInstance, $instance->singletonDep);
     }
 }
