@@ -7,6 +7,9 @@ use Luizfilipezs\Container\Exceptions\ContainerException;
 use ReflectionClass;
 use ReflectionParameter;
 
+/**
+ * Dependency injection container.
+ */
 class Container
 {
     /**
@@ -24,9 +27,15 @@ class Container
     private array $valueDefinitions = [];
 
     /**
+     * Gets a class instance.
+     *
      * @template T
-     * @param class-string<T> $className
-     * @return T
+     *
+     * @param class-string<T> $className Class name.
+     *
+     * @return T Class instance.
+     *
+     * @throws ContainerException If instance cannot be created.
      */
     public function get(string $className): mixed
     {
@@ -46,41 +55,97 @@ class Container
         return $instance;
     }
 
+    /**
+     * Sets a class definition.
+     *
+     * @template T
+     *
+     * @param class-string<T> $className Class name.
+     * @param T|class-string<T>|callable|callable(): T $definition Class definition.
+     */
     public function set(string $className, mixed $definition): void
     {
         $this->definitions[$className] = $definition;
     }
 
+    /**
+     * Checks if a class is defined.
+     *
+     * @param class-string $className Class name.
+     *
+     * @return bool If class is defined.
+     */
     public function has(string $className): bool
     {
         return array_key_exists($className, $this->definitions);
     }
 
+    /**
+     * Removes a class definition.
+     *
+     * @param class-string $className Class name.
+     */
     public function remove(string $className): void
     {
         unset($this->definitions[$className]);
     }
 
+    /**
+     * Gets a value definition.
+     *
+     * @param string $identifier Value identifier.
+     *
+     * @return mixed Value definition.
+     */
     public function getValue(string $identifier): mixed
     {
         return $this->valueDefinitions[$identifier] ?? null;
     }
 
+    /**
+     * Sets a value definition.
+     *
+     * @param string $identifier Value identifier.
+     * @param mixed $value Value definition.
+     */
     public function setValue(string $identifier, mixed $value): void
     {
         $this->valueDefinitions[$identifier] = $value;
     }
 
+    /**
+     * Checks if a value is defined.
+     *
+     * @param string $identifier Value identifier.
+     *
+     * @return bool If value is defined.
+     */
     public function hasValue(string $identifier): bool
     {
         return array_key_exists($identifier, $this->valueDefinitions);
     }
 
+    /**
+     * Removes a value definition.
+     *
+     * @param string $identifier Value identifier.
+     */
     public function removeValue(string $identifier): void
     {
         unset($this->valueDefinitions[$identifier]);
     }
 
+    /**
+     * Gets an instance from its class definition.
+     *
+     * @template T
+     *
+     * @param class-string<T> $className Class name.
+     *
+     * @return T Class instance.
+     *
+     * @throws ContainerException If definition is invalid or does not exist.
+     */
     private function getFromDefinition(string $className): mixed
     {
         $definition = $this->definitions[$className];
@@ -114,16 +179,37 @@ class Container
         );
     }
 
+    /**
+     * Checks wheter a class has the `#[Lazy]` attribute.
+     *
+     * @param ReflectionClass $reflectionClass Class reflection.
+     *
+     * @return bool If class is lazy.
+     */
     private function isLazy(ReflectionClass $reflectionClass): bool
     {
         return $this->hasAttribute($reflectionClass, Lazy::class);
     }
 
+    /**
+     * Checks wheter a class has the `#[Singleton]` attribute.
+     *
+     * @param ReflectionClass $reflectionClass Class reflection.
+     *
+     * @return bool If class is singleton.
+     */
     private function isSingleton(ReflectionClass $reflectionClass): bool
     {
         return $this->hasAttribute($reflectionClass, Singleton::class);
     }
 
+    /**
+     * Checks wheter a class has an attribute.
+     *
+     * @param ReflectionClass $reflectionClass Class reflection.
+     *
+     * @return bool If class has the attribute.
+     */
     private function hasAttribute(ReflectionClass $reflectionClass, string $attributeClass): bool
     {
         $attributes = $reflectionClass->getAttributes($attributeClass);
@@ -131,12 +217,27 @@ class Container
         return count($attributes) > 0;
     }
 
-    private function instantiate(ReflectionClass $reflectionClass)
+    /**
+     * Instantiates a class with its constructor arguments.
+     *
+     * @param ReflectionClass $reflectionClass Class reflection.
+     *
+     * @return object Class instance.
+     */
+    private function instantiate(ReflectionClass $reflectionClass): mixed
     {
         return $reflectionClass->newInstanceArgs($this->createConstructorArgs($reflectionClass));
     }
 
-    private function instantiateLazy(ReflectionClass $reflectionClass)
+    /**
+     * Instantiates a lazy class with its constructor arguments without calling
+     * the constructor yet.
+     *
+     * @param ReflectionClass $reflectionClass Class reflection.
+     *
+     * @return object Class instance.
+     */
+    private function instantiateLazy(ReflectionClass $reflectionClass): mixed
     {
         return $reflectionClass->newLazyGhost(
             fn($instance) => $instance->__construct(
@@ -145,6 +246,16 @@ class Container
         );
     }
 
+    /**
+     * Creates the constructor arguments for a class.
+     *
+     * @param ReflectionClass $reflectionClass Class reflection.
+     *
+     * @return mixed[] Constructor arguments.
+     *
+     * @throws ContainerException If constructor arguments are invalid (i.e. refer to the same
+     * entity, has no injection configuration or does not exist).
+     */
     private function createConstructorArgs(ReflectionClass $reflectionClass): array
     {
         $constructReflection = $reflectionClass->getConstructor();
@@ -184,6 +295,15 @@ class Container
         return $arguments;
     }
 
+    /**
+     * Gets a parameter value from its definition on the container.
+     *
+     * @param ReflectionParameter $param Parameter reflection.
+     *
+     * @return mixed Parameter value.
+     *
+     * @throws ContainerException If definition is invalid or does not exist.
+     */
     private function getParamValueFromDefinition(ReflectionParameter $param): mixed
     {
         $injectAttribute = $param->getAttributes(Inject::class)[0]?->newInstance();
