@@ -102,7 +102,7 @@ class Container
         if (is_object($definition)) {
             if (get_class($definition) !== $className) {
                 throw new ContainerException(
-                    "Container definition for $className is an object, but it is not an instance of $className.",
+                    "Container definition for {$className} is an object, but it is not an instance of the same class.",
                 );
             }
 
@@ -110,7 +110,7 @@ class Container
         }
 
         throw new ContainerException(
-            "Container definition for $className is not a valid definition.",
+            "Container definition for {$className} is not a valid definition.",
         );
     }
 
@@ -161,7 +161,7 @@ class Container
 
             if (in_array($paramType, ['self', 'parent', 'static'])) {
                 throw new ContainerException(
-                    "Container cannot inject {$paramType}. A dependency cannot refer to the same class.",
+                    "Container cannot inject {$paramType}. A constructor dependency cannot refer to the same class.",
                 );
             }
 
@@ -196,13 +196,21 @@ class Container
 
         if ($value === null) {
             throw new ContainerException(
-                "Container cannot inject {$injectAttribute->identifier}. It is not defined.",
+                "Container cannot inject \"{$injectAttribute->identifier}\". It is not defined.",
             );
         }
 
-        if ($param->getType()->getName() !== gettype($value)) {
+        $paramType = $param->getType()->getName();
+        $valueType = gettype($value);
+
+        if ($paramType !== $valueType) {
             throw new ContainerException(
-                "Container cannot inject {$injectAttribute->identifier}. It is not the same type as the parameter.",
+                sprintf(
+                    'Container cannot inject "%s". It is not the same type as the parameter. Expected %s, got %s.',
+                    $injectAttribute->identifier,
+                    $paramType,
+                    $valueType,
+                ),
             );
         }
 
