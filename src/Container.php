@@ -123,7 +123,13 @@ class Container
      */
     public function getValue(string $identifier): mixed
     {
-        return $this->valueDefinitions[$identifier] ?? null;
+        $value = $this->valueDefinitions[$identifier] ?? null;
+
+        if ($value === null && $this->strict) {
+            throw new ContainerException("{$identifier} has no definition.");
+        }
+
+        return $value;
     }
 
     /**
