@@ -22,7 +22,7 @@ composer require luizfilipezs/container
 ```php
 $container = new Container();
 $container->set(MyInterface::class, MyClass::class);
-$myObjet = $container->get(MyInterface::class);
+$myObject = $container->get(MyInterface::class);
 ```
 
 The above example creates a new instance of `MyClass`, typed as `MyInterface`.
