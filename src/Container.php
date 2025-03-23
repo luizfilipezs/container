@@ -141,32 +141,91 @@ class Container
         $definition = $this->definitions[$className];
 
         if (is_string($definition)) {
-            if (!class_exists($definition)) {
-                throw new ContainerException(
-                    "Container definition for {$className} is a string, but it is not a valid class name.",
-                );
-            }
-
-            return $this->getUndefined($definition);
+            return $this->getFromClassStringDefinition($className, $definition);
         }
 
         if (is_callable($definition)) {
-            return $definition();
+            return $this->getFromCallableDefinition($className, $definition);
         }
 
         if (is_object($definition)) {
-            if (get_class($definition) !== $className) {
-                throw new ContainerException(
-                    "Container definition for {$className} is an object, but it is not an instance of the same class.",
-                );
-            }
-
-            return $definition;
+            return $this->getFromObjectDefinition($className, $definition);
         }
 
         throw new ContainerException(
             "Container definition for {$className} is not a valid definition.",
         );
+    }
+
+    /**
+     * Gets a class instance from its class string definition.
+     *
+     * @template T
+     *
+     * @param class-string<T> $className Class name.
+     * @param string $definition Class string definition.
+     *
+     * @return T Class instance.
+     *
+     * @throws ContainerException If class string definition is invalid.
+     */
+    private function getFromClassStringDefinition(string $className, string $definition): mixed
+    {
+        if (!class_exists($definition)) {
+            throw new ContainerException(
+                "Container definition for {$className} is a string, but it is not a valid class name.",
+            );
+        }
+
+        return $this->getUndefined($definition);
+    }
+
+    /**
+     * Gets a class instance from its callable definition.
+     *
+     * @template T
+     *
+     * @param class-string<T> $className Class name.
+     * @param callable(): T $definition Callable that returns a class instance.
+     *
+     * @return T Class instance.
+     *
+     * @throws ContainerException If the callable does not return an instance of the expected class.
+     */
+    private function getFromCallableDefinition(string $className, callable $definition): mixed
+    {
+        $callableReturn = $definition();
+
+        if (!is_object($callableReturn) || !$callableReturn instanceof $className) {
+            throw new ContainerException(
+                "Container definition for {$className} is a callable that does not return an instance of the expected class.",
+            );
+        }
+
+        return $callableReturn;
+    }
+
+    /**
+     * Gets a class instance from its object definition.
+     *
+     * @template T
+     *
+     * @param class-string<T> $className Class name.
+     * @param object $definition Class instance definition.
+     *
+     * @return T Class instance.
+     *
+     * @throws ContainerException If the object definition is not an instance of the same class.
+     */
+    private function getFromObjectDefinition(string $className, object $definition): mixed
+    {
+        if (!$definition instanceof $className) {
+            throw new ContainerException(
+                "Container definition for {$className} is an object, but it is not an instance of the same class.",
+            );
+        }
+
+        return $definition;
     }
 
     /**
