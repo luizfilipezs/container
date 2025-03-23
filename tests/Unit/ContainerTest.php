@@ -107,4 +107,21 @@ final class ContainerTest extends TestCase
 
         $this->container->get(ObjectWithoutConstructor::class);
     }
+
+    public function testGetUnsetDefinition(): void
+    {
+        $instance = $this->container->get(ObjectWithoutConstructor::class);
+
+        $this->assertInstanceOf(ObjectWithoutConstructor::class, $instance);
+    }
+
+    public function testGetUnsetDefinitionWithStrictOption(): void
+    {
+        $container = new Container(strict: true);
+
+        $this->expectException(ContainerException::class);
+        $this->expectExceptionMessage(ObjectWithoutConstructor::class . ' has no definition.');
+
+        $container->get(ObjectWithoutConstructor::class);
+    }
 }

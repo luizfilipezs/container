@@ -13,6 +13,13 @@ use ReflectionParameter;
 class Container
 {
     /**
+     * Constructor.
+     *
+     * @param bool $strict If true, only defined classes and values will be provided.
+     */
+    public function __construct(public readonly bool $strict = false) {}
+
+    /**
      * Class definitions.
      *
      * @var array<string,class-string,callable,object>
@@ -39,9 +46,15 @@ class Container
      */
     public function get(string $className): mixed
     {
-        return $this->has($className)
-            ? $this->getFromDefinition($className)
-            : $this->getUndefined($className);
+        if ($this->has($className)) {
+            return $this->getFromDefinition($className);
+        }
+
+        if ($this->strict) {
+            throw new ContainerException("{$className} has no definition.");
+        }
+
+        return $this->getUndefined($className);
     }
 
     /**
