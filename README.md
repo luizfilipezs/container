@@ -21,7 +21,7 @@ composer require luizfilipezs/container
 
 ```php
 $container = new Container();
-$containre->set(MyInterface::class, MyClass::class);
+$container->set(MyInterface::class, MyClass::class);
 $myObjet = $container->get(MyInterface::class);
 ```
 
@@ -38,7 +38,7 @@ $container->set(UserServiceInterface::class, UserService::class);
 #### Class instance
 
 ```php
-$container->set(UserServiceInterface::class, new UserSercice());
+$container->set(UserServiceInterface::class, new UserService());
 ```
 
 #### Closure
@@ -81,7 +81,7 @@ echo $userService2->foo; // 'baz'
 
 ### Setting a class with lazy constructor
 
-Lazy constructor were natively implemented in PHP 8.4. It allows an object to be created without its `__construct` get called until
+Lazy constructor was natively implemented in PHP 8.4. It allows an object to be created without its `__construct` method getting called until
 an attribute is used.
 
 ```php
@@ -90,7 +90,7 @@ use Luizfilipezs\Container\Attributes\Lazy;
 #[Lazy]
 class UserService
 {
-    public function __contruct(private readonly UserRepositoryInterface $userRepostory)
+    public function __contruct(private readonly UserRepositoryInterface $userRepository)
     {
         echo 'Constructor was called.';
     }
@@ -141,13 +141,11 @@ class MyClass
 }
 
 $object = $container->get(MyClass::class);
-/*
-ContainerException: Container cannot inject "SOME_INT". It is not the same
-type as the parameter. Expected float, got int.
-*/
+// ContainerException: Container cannot inject "SOME_INT". It is not the same
+// type as the parameter. Expected float, got int.
 ```
 
-#### Value definition control methods
+#### Value definition methods
 
 ```php
 $container->setValue('key', 'value');
@@ -158,11 +156,15 @@ $container->removeValue('key');
 
 ## Contributing
 
-### Installation
+### Forking
+
+At the top of the Github repository page, click the **Fork** button. Then clone the forked repository to your machine.
+
+### Installing dependencies
 
 ```bash
-npm install # installs Prettier package
-composer update # installs composer dependencies
+npm install # install Prettier package
+composer update # install composer dependencies
 ```
 
 ### Testing
@@ -172,3 +174,5 @@ Run:
 ```bash
 ./vendor/bin/phpunit tests
 ```
+
+When making changes to the codebase, remember to create tests that cover all scenarios.
