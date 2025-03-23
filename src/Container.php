@@ -3,7 +3,10 @@
 namespace Luizfilipezs\Container;
 
 use Luizfilipezs\Container\Attributes\{Inject, Lazy, Singleton};
+use Luizfilipezs\Container\Enums\EventName;
+use Luizfilipezs\Container\Events\EventHandler;
 use Luizfilipezs\Container\Exceptions\ContainerException;
+use Luizfilipezs\Container\Interfaces\EventHandlerInterface;
 use ReflectionClass;
 use ReflectionParameter;
 
@@ -13,11 +16,25 @@ use ReflectionParameter;
 class Container
 {
     /**
+     * If true, only defined classes and values will be provided.
+     */
+    private(set) bool $strict = false;
+
+    /**
+     * Event handler.
+     */
+    private readonly EventHandlerInterface $eventHandler;
+
+    /**
      * Constructor.
-     *
+     * 
      * @param bool $strict If true, only defined classes and values will be provided.
      */
-    public function __construct(public readonly bool $strict = false) {}
+    public function __construct(bool $strict = false)
+    {
+        $this->eventHandler = $this->get(EventHandler::class);
+        $this->strict = $strict;
+    }
 
     /**
      * Class definitions.
