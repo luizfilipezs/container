@@ -3,7 +3,11 @@
 namespace Luizfilipezs\Container\Tests\Unit;
 
 use Luizfilipezs\Container\Container;
+use Luizfilipezs\Container\Enums\EventName;
+use Luizfilipezs\Container\Events\EventHandler;
 use Luizfilipezs\Container\Exceptions\ContainerException;
+use Luizfilipezs\Container\Interfaces\EventHandlerInterface;
+use Luizfilipezs\Container\Tests\Data\Lazy\{LazyObject, LazyObjectWithouConstructor};
 use Luizfilipezs\Container\Tests\Data\ObjectWithoutConstructor;
 use Luizfilipezs\Container\Tests\Data\Singleton\SingletonObject;
 use PHPUnit\Framework\TestCase;
@@ -133,11 +137,17 @@ final class ContainerTest extends TestCase
 
     public function testGetUnsetDefinitionWithStrictOption(): void
     {
+        // create container with strict option
         $container = new Container(strict: true);
 
+        // set container dependency
+        $container->set(EventHandlerInterface::class, EventHandler::class);
+
+        // assert exception when getting undefined class
         $this->expectException(ContainerException::class);
         $this->expectExceptionMessage(ObjectWithoutConstructor::class . ' has no definition.');
 
+        // execute
         $container->get(ObjectWithoutConstructor::class);
     }
 
@@ -159,5 +169,40 @@ final class ContainerTest extends TestCase
         $obj2 = $this->container->get(SingletonObject::class);
 
         $this->assertSame($obj1, $obj2);
+    }
+
+    public function testGetLazyObject(): void
+    {
+        $constructed = false;
+
+        $eventHandler = $this->container->get(EventHandler::class);
+        $eventHandler->on(
+            event: EventName::LAZY_CLASS_CONSTRUCTED->value,
+            callback: function () use (&$constructed) {
+                $constructed = true;
+            },
+        );
+
+        $instance = $this->container->get(LazyObject::class);
+
+        $this->assertInstanceOf(LazyObject::class, $instance);
+        $this->assertFalse($constructed);
+
+        $instance->foo;
+
+        $this->assertTrue($constructed);
+    }
+
+    public function testGetLazyObjectWithouConstructor(): void
+    {
+        $this->expectException(ContainerException::class);
+        $this->expectExceptionMessage(
+            sprintf(
+                'Lazy class %s has no constructor. Only classes with a constructor can be lazy.',
+                LazyObjectWithouConstructor::class,
+            ),
+        );
+
+        $this->container->get(LazyObjectWithouConstructor::class);
     }
 }
