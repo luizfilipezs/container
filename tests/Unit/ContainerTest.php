@@ -15,6 +15,8 @@ use Luizfilipezs\Container\Tests\Data\{
     ObjectWithInjectedParams,
     ObjectWithLazyDependency,
     ObjectWithNullableInjectedParam,
+    ObjectWithParentParam,
+    ObjectWithSelfParam,
     ObjectWithSingletonDependency,
     ObjectWithoutConstructor,
 };
@@ -350,5 +352,25 @@ final class ContainerTest extends TestCase
         $instance = $this->container->get(ObjectWithNullableInjectedParam::class);
 
         $this->assertEquals(null, $instance->value);
+    }
+
+    public function testGetObjectWithSelfParam(): void
+    {
+        $this->expectException(ContainerException::class);
+        $this->expectExceptionMessage(
+            'Container cannot inject self. A constructor dependency cannot refer to itself.',
+        );
+
+        $this->container->get(ObjectWithSelfParam::class);
+    }
+
+    public function testGetObjectWithParentParam(): void
+    {
+        $this->expectException(ContainerException::class);
+        $this->expectExceptionMessage(
+            'Container cannot inject parent. A constructor dependency cannot refer to itself.',
+        );
+
+        $this->container->get(ObjectWithParentParam::class);
     }
 }
