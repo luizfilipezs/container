@@ -29,9 +29,12 @@ class Container
      * Constructor.
      * 
      * @param bool $strict If true, only defined classes and values will be provided.
+     * @param bool $skipNullParams If true, null parameters will not be injected.
      */
-    public function __construct(bool $strict = false)
-    {
+    public function __construct(
+        bool $strict = false,
+        public readonly bool $skipNullParams = true,
+    ) {
         $this->eventHandler = $this->get(EventHandler::class);
         $this->strict = $strict;
     }
@@ -409,13 +412,6 @@ class Container
 
         foreach ($constructParams as $param) {
             $paramType = $param->getType()->getName();
-
-            if (in_array($paramType, ['self', 'parent', 'static'])) {
-                throw new ContainerException(
-                    "Container cannot inject {$paramType}. A constructor dependency cannot refer to the same class.",
-                );
-            }
-
             $injectAttribute = $param->getAttributes(Inject::class)[0] ?? null;
 
             if ($injectAttribute !== null) {
@@ -424,6 +420,17 @@ class Container
                     definition: $injectAttribute->newInstance()->identifier,
                 );
                 continue;
+            }
+
+            if ($this->skipNullParams && $param->allowsNull()) {
+                $arguments[] = null;
+                continue;
+            }
+
+            if (in_array($paramType, ['self', 'parent', 'static'])) {
+                throw new ContainerException(
+                    "Container cannot inject {$paramType}. A constructor dependency cannot refer to the same class.",
+                );
             }
 
             if (class_exists($paramType)) {
