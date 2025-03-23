@@ -54,6 +54,10 @@ class Container
             throw new ContainerException("{$className} has no definition.");
         }
 
+        if (!class_exists($className)) {
+            throw new ContainerException("{$className} is not a class and cannot be instantiated.");
+        }
+
         return $this->getUndefined($className);
     }
 

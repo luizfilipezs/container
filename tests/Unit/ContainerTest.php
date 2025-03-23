@@ -124,4 +124,16 @@ final class ContainerTest extends TestCase
 
         $container->get(ObjectWithoutConstructor::class);
     }
+
+    public function testGetUnsetDefinitionWithInvalidClassName(): void
+    {
+        $invalidClassName = 'non-existent-class';
+
+        $this->expectException(ContainerException::class);
+        $this->expectExceptionMessage(
+            $invalidClassName . ' is not a class and cannot be instantiated.',
+        );
+
+        $this->container->get($invalidClassName);
+    }
 }
