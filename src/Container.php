@@ -328,11 +328,39 @@ class Container
      */
     private function instantiateLazy(ReflectionClass $reflectionClass): mixed
     {
-        return $reflectionClass->newLazyGhost(
-            fn($instance) => $instance->__construct(
-                ...$this->createConstructorArgs($reflectionClass),
-            ),
-        );
+        $this->checkLazyConstructor($reflectionClass);
+
+        return $reflectionClass->newLazyGhost(function ($instance) use ($reflectionClass) {
+            $instance->__construct(...$this->createConstructorArgs($reflectionClass));
+
+            $this->eventHandler->emit(
+                EventName::LAZY_CLASS_CONSTRUCTED->value,
+                $reflectionClass->getName(),
+                $instance,
+            );
+        });
+    }
+
+    /**
+     * Checks if a class has a constructor. Only classes with a constructor can
+     * be lazy.
+     *
+     * @param ReflectionClass $reflectionClass Class reflection.
+     *
+     * @throws ContainerException If the class has no constructor.
+     */
+    private function checkLazyConstructor(ReflectionClass $reflectionClass)
+    {
+        $reflectionConstructor = $reflectionClass->getConstructor();
+
+        if ($reflectionConstructor === null) {
+            throw new ContainerException(
+                sprintf(
+                    'Lazy class %s has no constructor. Only classes with a constructor can be lazy.',
+                    $reflectionClass->getName(),
+                ),
+            );
+        }
     }
 
     /**
