@@ -1,0 +1,22 @@
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[php]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.formatOnSave": false,
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        "match": "\\.php$",
+        "cmd": "PHP_CS_FIXER_IGNORE_ENV=1 ./vendor/bin/php-cs-fixer fix \"${file}\""
+      },
+      {
+        "match": "\\.(php|json)$",
+        "cmd": "npm run prettier \"${file}\""
+      }
+    ]
+  },
+  "intelephense.format.enable": true,
+  "intelephense.diagnostics.enable": true,
+  "intelephense.diagnostics.typeErrors": true
+}

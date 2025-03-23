@@ -1,0 +1,9 @@
+{
+  "plugins": ["@prettier/plugin-php"],
+  "phpVersion": "8.1",
+  "printWidth": 100,
+  "singleQuote": true,
+  "trailingCommaPHP": true,
+  "trailingComma": "all",
+  "braceStyle": "per-cs"
+}

@@ -1,0 +1,11 @@
+# Composer dependencies
+vendor/
+
+# Node modules
+node_modules/
+
+# Ignore OS generated files
+.DS_Store
+
+# PHP CS Fixer cache
+.php-cs-fixer.cache
