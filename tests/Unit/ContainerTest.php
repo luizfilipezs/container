@@ -14,6 +14,7 @@ use Luizfilipezs\Container\Tests\Data\{
     ObjectWithDependencies,
     ObjectWithInjectedParams,
     ObjectWithLazyDependency,
+    ObjectWithNullableInjectedParam,
     ObjectWithSingletonDependency,
     ObjectWithoutConstructor,
 };
@@ -335,8 +336,19 @@ final class ContainerTest extends TestCase
     public function testGetObjectWithInjectedParamAndNoDefinition(): void
     {
         $this->expectException(ContainerException::class);
-        $this->expectExceptionMessage('Container cannot inject "NAME". It is not defined.');
+        $this->expectExceptionMessage(
+            'Container cannot inject "NAME". It is null and parameter is not nullable.',
+        );
 
         $this->container->get(ObjectWithInjectedParams::class);
+    }
+
+    public function testGetObjectWithNullableInjectedParam(): void
+    {
+        $this->container->setValue('KEY', null);
+
+        $instance = $this->container->get(ObjectWithNullableInjectedParam::class);
+
+        $this->assertEquals(null, $instance->value);
     }
 }

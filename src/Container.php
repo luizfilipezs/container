@@ -416,10 +416,13 @@ class Container
                 );
             }
 
-            $injectedValue = $this->getParamValueFromDefinition($param);
+            $injectAttribute = $param->getAttributes(Inject::class)[0] ?? null;
 
-            if ($injectedValue !== null) {
-                $arguments[] = $injectedValue;
+            if ($injectAttribute !== null) {
+                $arguments[] = $this->getParamValueFromDefinition(
+                    param: $param,
+                    definition: $injectAttribute->newInstance()->identifier,
+                );
                 continue;
             }
 
@@ -445,21 +448,18 @@ class Container
      *
      * @throws ContainerException If definition is invalid or does not exist.
      */
-    private function getParamValueFromDefinition(ReflectionParameter $param): mixed
+    private function getParamValueFromDefinition(ReflectionParameter $param, string $definition): mixed
     {
-        $injectAttribute = $param->getAttributes(Inject::class)[0] ?? null;
-
-        if ($injectAttribute === null) {
-            return null;
-        }
-
-        $identifier = $injectAttribute->newInstance()->identifier;
-        $value = $this->getValue($identifier);
+        $value = $this->getValue($definition);
 
         if ($value === null) {
-            throw new ContainerException(
-                "Container cannot inject \"{$identifier}\". It is not defined.",
-            );
+            if (!$param->allowsNull()) {
+                throw new ContainerException(
+                    "Container cannot inject \"{$definition}\". It is null and parameter is not nullable.",
+                );
+            }
+            
+            return null;
         }
         
         $paramType = $param->getType()->getName();
@@ -469,7 +469,7 @@ class Container
             throw new ContainerException(
                 sprintf(
                     'Container cannot inject "%s". It is not the same type as the parameter. Expected %s, got %s.',
-                    $identifier,
+                    $definition,
                     $paramType,
                     $valueType,
                 ),
