@@ -39,20 +39,9 @@ class Container
      */
     public function get(string $className): mixed
     {
-        if ($this->has($className)) {
-            return $this->getFromDefinition($className);
-        }
-
-        $reflectionClass = new ReflectionClass($className);
-        $instance = $this->isLazy($reflectionClass)
-            ? $this->instantiateLazy($reflectionClass)
-            : $this->instantiate($reflectionClass);
-
-        if ($this->isSingleton($reflectionClass)) {
-            $this->set($className, $instance);
-        }
-
-        return $instance;
+        return $this->has($className)
+            ? $this->getFromDefinition($className)
+            : $this->getUndefined($className);
     }
 
     /**
@@ -61,11 +50,12 @@ class Container
      * @template T
      *
      * @param class-string<T> $className Class name.
-     * @param T|class-string<T>|callable|callable(): T $definition Class definition.
+     * @param null|T|class-string<T>|callable|callable(): T $definition Class definition.
+     * If null, the class name will be used as definition.
      */
-    public function set(string $className, mixed $definition): void
+    public function set(string $className, mixed $definition = null): void
     {
-        $this->definitions[$className] = $definition;
+        $this->definitions[$className] = $definition ?? $className;
     }
 
     /**
@@ -157,7 +147,7 @@ class Container
                 );
             }
 
-            return $this->get($definition);
+            return $this->getUndefined($definition);
         }
 
         if (is_callable($definition)) {
@@ -177,6 +167,29 @@ class Container
         throw new ContainerException(
             "Container definition for {$className} is not a valid definition.",
         );
+    }
+
+    /**
+     * Gets a class without definition.
+     *
+     * @template T
+     *
+     * @param class-string<T> $className Class name.
+     *
+     * @return T Class instance.
+     */
+    private function getUndefined(string $className): mixed
+    {
+        $reflectionClass = new ReflectionClass($className);
+        $instance = $this->isLazy($reflectionClass)
+            ? $this->instantiateLazy($reflectionClass)
+            : $this->instantiate($reflectionClass);
+
+        if ($this->isSingleton($reflectionClass)) {
+            $this->set($className, $instance);
+        }
+
+        return $instance;
     }
 
     /**
