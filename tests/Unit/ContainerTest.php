@@ -3,12 +3,14 @@
 namespace Luizfilipezs\Container\Tests\Unit;
 
 use Luizfilipezs\Container\Container;
+use Luizfilipezs\Container\Exceptions\ContainerException;
 use Luizfilipezs\Container\Tests\Data\{
     ClassWithDeepDependencies,
     ClassWithDependencies,
     ClassWithoutDependencies,
     LazyClass,
     LazyClassWithDeepDependencies,
+    ObjectWithParamInjection,
 };
 use PHPUnit\Framework\TestCase;
 
@@ -73,5 +75,29 @@ final class ContainerTest extends TestCase
         } catch (\Exception $e) {
             $this->assertSame('Lazy constructor called.', $e->getMessage());
         }
+    }
+
+    public function testParameterInjection(): void
+    {
+        $this->container->setValue('Param1', 'abc');
+        $this->container->setValue('Param2', '123');
+
+        $instance = $this->container->get(ObjectWithParamInjection::class);
+
+        $this->assertSame('abc', $instance->a);
+        $this->assertSame('123', $instance->b);
+    }
+
+    public function testParameterInjectionWhenValueTypeIsInvalid(): void
+    {
+        $this->container->setValue('Param1', 'abc'); // valid
+        $this->container->setValue('Param2', ['123']); // invalid; parameter type is string
+
+        $this->expectException(ContainerException::class);
+        $this->expectExceptionMessage(
+            'Container cannot inject Param2. It is not the same type as the parameter.',
+        );
+
+        $this->container->get(ObjectWithParamInjection::class);
     }
 }

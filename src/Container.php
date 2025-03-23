@@ -2,9 +2,10 @@
 
 namespace Luizfilipezs\Container;
 
-use Luizfilipezs\Container\Attributes\{LazyGhost, Singleton};
+use Luizfilipezs\Container\Attributes\{Inject, LazyGhost, Singleton};
 use Luizfilipezs\Container\Exceptions\ContainerException;
 use ReflectionClass;
+use ReflectionParameter;
 
 class Container
 {
@@ -14,6 +15,13 @@ class Container
      * @var array<string,class-string,callable,object>
      */
     private array $definitions = [];
+
+    /**
+     * Value definitions.
+     *
+     * @var array<string,mixed>
+     */
+    private array $valueDefinitions = [];
 
     /**
      * @template T
@@ -51,6 +59,26 @@ class Container
     public function remove(string $className): void
     {
         unset($this->definitions[$className]);
+    }
+
+    public function getValue(string $identifier): mixed
+    {
+        return $this->valueDefinitions[$identifier] ?? null;
+    }
+
+    public function setValue(string $identifier, mixed $value): void
+    {
+        $this->valueDefinitions[$identifier] = $value;
+    }
+
+    public function hasValue(string $identifier): bool
+    {
+        return array_key_exists($identifier, $this->valueDefinitions);
+    }
+
+    public function removeValue(string $identifier): void
+    {
+        unset($this->valueDefinitions[$identifier]);
     }
 
     private function getFromDefinition(string $className): mixed
@@ -129,23 +157,55 @@ class Container
         $arguments = [];
 
         foreach ($constructParams as $param) {
-            $paramName = $param->getType()->getName();
+            $paramType = $param->getType()->getName();
 
-            if (in_array($paramName, ['self', 'parent', 'static'])) {
+            if (in_array($paramType, ['self', 'parent', 'static'])) {
                 throw new ContainerException(
-                    "Container cannot inject {$paramName}. It only works with different classes.",
+                    "Container cannot inject {$paramType}. A dependency cannot refer to the same class.",
                 );
             }
 
-            if (!class_exists($paramName)) {
+            $injectedValue = $this->getParamValueFromDefinition($param);
+
+            if ($injectedValue !== null) {
+                $arguments[] = $injectedValue;
+                continue;
+            }
+
+            if (!class_exists($paramType)) {
                 throw new ContainerException(
-                    "Container cannot inject {$paramName}. It is not a class or does not exist.",
+                    "Container cannot inject {$paramType}. It is not a class or does not exist.",
                 );
             }
 
-            $arguments[] = $this->get($paramName);
+            $arguments[] = $this->get($paramType);
         }
 
         return $arguments;
+    }
+
+    private function getParamValueFromDefinition(ReflectionParameter $param): mixed
+    {
+        $injectAttribute = $param->getAttributes(Inject::class)[0]?->newInstance();
+
+        if ($injectAttribute === null) {
+            return null;
+        }
+
+        $value = $this->getValue($injectAttribute->identifier);
+
+        if ($value === null) {
+            throw new ContainerException(
+                "Container cannot inject {$injectAttribute->identifier}. It is not defined.",
+            );
+        }
+
+        if ($param->getType()->getName() !== gettype($value)) {
+            throw new ContainerException(
+                "Container cannot inject {$injectAttribute->identifier}. It is not the same type as the parameter.",
+            );
+        }
+
+        return $value;
     }
 }
