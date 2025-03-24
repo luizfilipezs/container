@@ -10,25 +10,21 @@ use Luizfilipezs\Container\Interfaces\ContainerEventHandlerInterface;
 final class ContainerEventHandler implements ContainerEventHandlerInterface
 {
     /**
-     * Callbacks called every time an event is emitted.
+     * Event callback configurations.
      *
-     * @var array<string,callable[]>
+     * @var array<string,array{callback: callable, isOnce: bool}>
      */
-    private array $events = [];
-
-    /**
-     * Callbacks called only once when an event is emitted.
-     *
-     * @var array<string,callable[]>
-     */
-    private array $onceEvents = [];
+    private array $callbacks = [];
 
     /**
      * {@inheritdoc}
      */
     public function once(ContainerEvent $event, callable $callback): void
     {
-        $this->events[$event->value][] = $callback;
+        $this->callbacks[$event->value][] = [
+            'callback' => $callback,
+            'isOnce' => true,
+        ];
     }
 
     /**
@@ -36,7 +32,10 @@ final class ContainerEventHandler implements ContainerEventHandlerInterface
      */
     public function on(ContainerEvent $event, callable $callback): void
     {
-        $this->events[$event->value][] = $callback;
+        $this->callbacks[$event->value][] = [
+            'callback' => $callback,
+            'isOnce' => false,
+        ];
     }
 
     /**
@@ -44,37 +43,33 @@ final class ContainerEventHandler implements ContainerEventHandlerInterface
      */
     public function off(ContainerEvent $event, callable $callback): void
     {
-        if (isset($this->events[$event->value])) {
-            unset(
-                $this->events[$event->value][array_search($callback, $this->events[$event->value])],
-            );
+        if (!isset($this->callbacks[$event->value])) {
+            return;
         }
 
-        if (isset($this->onceEvents[$event->value])) {
-            unset(
-                $this->onceEvents[$event->value][
-                    array_search($callback, $this->onceEvents[$event->value])
-                ],
-            );
-        }
+        $this->callbacks[$event->value] = array_filter(
+            $this->callbacks[$event->value],
+            fn($item) => $item['callback'] !== $callback,
+        );
     }
 
     /**
      * {@inheritdoc}
      */
-    public function emit(ContainerEvent $event, ...$args): void
+    public function emit(ContainerEvent $event, mixed ...$args): void
     {
-        $fixedCallbacks = $this->events[$event->value] ?? [];
-
-        foreach ($fixedCallbacks as $callback) {
-            $callback(...$args);
+        if (!isset($this->callbacks[$event->value])) {
+            return;
         }
 
-        $onceCallbacks = $this->onceEvents[$event->value] ?? [];
+        $callbacksToExecute = $this->callbacks[$event->value];
 
-        foreach ($onceCallbacks as $callback) {
-            $callback(...$args);
-            $this->off($event, $callback);
+        foreach ($callbacksToExecute as $item) {
+            $item['callback'](...$args);
+
+            if ($item['isOnce']) {
+                $this->off($event, $item['callback']);
+            }
         }
     }
 }

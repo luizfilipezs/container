@@ -39,5 +39,5 @@ interface ContainerEventHandlerInterface
      * @param ContainerEvent $event Container event.
      * @param mixed ...$args Event arguments.
      */
-    public function emit(ContainerEvent $event, ...$args): void;
+    public function emit(ContainerEvent $event, mixed ...$args): void;
 }

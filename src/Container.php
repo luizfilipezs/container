@@ -17,18 +17,11 @@ use ReflectionParameter;
 class Container
 {
     /**
-     * Container event handler.
-     */
-    private readonly ContainerEventHandlerInterface $eventHandler;
-
-    /**
      * Class definitions.
      *
      * @var array<string,class-string,callable,object>
      */
-    private array $definitions = [
-        ContainerEventHandlerInterface::class => ContainerEventHandler::class,
-    ];
+    private array $definitions = [];
 
     /**
      * Value definitions.
@@ -45,6 +38,11 @@ class Container
     private array $reflectionClasses = [];
 
     /**
+     * Container event handler.
+     */
+    private readonly ContainerEventHandlerInterface $eventHandler;
+
+    /**
      * Constructor.
      *
      * @param bool $strict Wether to provide only defined classes and values. If true, only
@@ -59,7 +57,10 @@ class Container
         public readonly bool $skipNullableClassParams = true,
         public readonly bool $skipNullableValueParams = true,
     ) {
-        $this->eventHandler = $this->get(ContainerEventHandlerInterface::class);
+        $this->eventHandler = new ContainerEventHandler();
+
+        $this->set(ContainerEventHandlerInterface::class, $this->eventHandler);
+        $this->set(ContainerEventHandler::class, $this->eventHandler);
     }
 
     /**
@@ -75,6 +76,8 @@ class Container
      */
     public function get(string $className): mixed
     {
+        $this->eventHandler->emit(ContainerEvent::BEFORE_RESOLVE, $className);
+
         if ($this->has($className)) {
             return $this->getFromDefinition($className);
         }
