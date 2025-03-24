@@ -7,14 +7,20 @@ use Luizfilipezs\Container\Enums\EventName;
 use Luizfilipezs\Container\Events\EventHandler;
 use Luizfilipezs\Container\Exceptions\ContainerException;
 use Luizfilipezs\Container\Interfaces\EventHandlerInterface;
+use Luizfilipezs\Container\Tests\Data\Interfaces\EmptyInterface;
 use Luizfilipezs\Container\Tests\Data\Lazy\{LazyObject, LazyObjectWithoutConstructor};
 use Luizfilipezs\Container\Tests\Data\Singleton\SingletonObject;
 use Luizfilipezs\Container\Tests\Data\{
+    EmptyObject,
     ObjectWithDeepDependencies,
     ObjectWithDependencies,
     ObjectWithInjectedParams,
     ObjectWithLazyDependency,
+    ObjectWithNullableClassParam,
     ObjectWithNullableInjectedParam,
+    ObjectWithNullableInterfaceParam,
+    ObjectWithNullableParamInjected,
+    ObjectWithNullableValueParam,
     ObjectWithParentParam,
     ObjectWithSelfParam,
     ObjectWithSingletonDependency,
@@ -352,6 +358,69 @@ final class ContainerTest extends TestCase
         $instance = $this->container->get(ObjectWithNullableInjectedParam::class);
 
         $this->assertEquals(null, $instance->value);
+    }
+
+    public function testSkipNullClassParamsOptionActive(): void
+    {
+        $container = new Container(skipNullableClassParams: true);
+        $instance = $container->get(ObjectWithNullableClassParam::class);
+
+        $this->assertNull($instance->nullableDep);
+    }
+
+    public function testSkipNullClassParamsOptionInactive(): void
+    {
+        $container = new Container(skipNullableClassParams: false);
+        $instance = $container->get(ObjectWithNullableClassParam::class);
+
+        $this->assertNotNull($instance->nullableDep);
+        $this->assertInstanceOf(ObjectWithoutConstructor::class, $instance->nullableDep);
+    }
+
+    public function testSkipNullClassParamsOptionActiveWithInterface(): void
+    {
+        $container = new Container(skipNullableClassParams: true);
+        $instance = $container->get(ObjectWithNullableInterfaceParam::class);
+
+        $this->assertNull($instance->nullableDep);
+    }
+
+    public function testSkipNullClassParamsOptionInactiveWithInterface(): void
+    {
+        $container = new Container(skipNullableClassParams: false);
+        $container->set(EmptyInterface::class, EmptyObject::class);
+        $instance = $container->get(ObjectWithNullableInterfaceParam::class);
+
+        $this->assertInstanceOf(EmptyObject::class, $instance->nullableDep);
+    }
+
+    public function testSkipNullValueParamsOptionActive(): void
+    {
+        $container = new Container(skipNullableValueParams: true);
+        $instance1 = $container->get(ObjectWithNullableValueParam::class);
+
+        $this->assertNull($instance1->value);
+    }
+
+    public function testSkipNullValueParamsOptionActiveWithInjectAttribute(): void
+    {
+        $container = new Container(skipNullableValueParams: true);
+        $instance1 = $container->get(ObjectWithNullableParamInjected::class);
+
+        // if injected, param should not be skipped
+        $this->assertNotNull($instance1->nullableDep);
+    }
+
+    public function testSkipNullValueParamsOptionInactive(): void
+    {
+        $container = new Container(skipNullableValueParams: false);
+
+        $this->expectException(ContainerException::class);
+        $this->expectExceptionMessage(
+            'Container cannot inject string. It is not a valid class name and has no injection configuration.',
+        );
+
+        $container->get(ObjectWithNullableValueParam::class);
     }
 
     public function testGetObjectWithSelfParam(): void
