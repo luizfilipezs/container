@@ -541,17 +541,7 @@ class Container
         $value = $this->getValue($definition);
 
         if ($value === null) {
-            if ($this->isClassOrInterface($definition)) {
-                return $this->get($definition);
-            }
-
-            if ($param->allowsNull()) {
-                return null;
-            }
-
-            throw new ContainerException(
-                "Container cannot inject \"{$definition}\". It is null and parameter is not nullable.",
-            );
+            return $this->handleParamNullInjection($param, $definition);
         }
 
         $paramType = $param->getType()->getName();
@@ -569,6 +559,32 @@ class Container
         }
 
         return $value;
+    }
+
+    /**
+     * Identifies the proper argument to be injected into a parameter when the configured injection
+     * is null.
+     *
+     * @param ReflectionParameter $param Parameter reflection.
+     * @param string $definition Injection identifier.
+     *
+     * @return null|object Parameter argument
+     */
+    private function handleParamNullInjection(
+        ReflectionParameter $param,
+        string $definition,
+    ): ?object {
+        if ($this->isClassOrInterface($definition)) {
+            return $this->get($definition);
+        }
+
+        if ($param->allowsNull()) {
+            return null;
+        }
+
+        throw new ContainerException(
+            "Container cannot inject \"{$definition}\". It is null and parameter is not nullable.",
+        );
     }
 
     /**
