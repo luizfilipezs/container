@@ -38,6 +38,13 @@ class Container
     private array $valueDefinitions = [];
 
     /**
+     * Reflection classes cache.
+     *
+     * @var array<class-string,ReflectionClass>
+     */
+    private array $reflectionClasses = [];
+
+    /**
      * Constructor.
      *
      * @param bool $strict Wether to provide only defined classes and values. If true, only
@@ -283,10 +290,12 @@ class Container
      * the created object is a singleton.
      *
      * @return T Class instance.
+     *
+     * @throws \ReflectionException If the class does not exist.
      */
     private function getUndefined(string $className, ?string $bindSingletonTo = null): mixed
     {
-        $reflectionClass = new ReflectionClass($className);
+        $reflectionClass = $this->getReflectionClass($className);
         $instance = $this->isLazy($reflectionClass)
             ? $this->instantiateLazy($reflectionClass)
             : $this->instantiate($reflectionClass);
@@ -297,6 +306,24 @@ class Container
         }
 
         return $instance;
+    }
+
+    /**
+     * Gets a class reflection from cache or creates a new one.
+     *
+     * @param string $className Class name.
+     *
+     * @return ReflectionClass Class reflection.
+     *
+     * @throws \ReflectionException If the class does not exist.
+     */
+    private function getReflectionClass(string $className): ReflectionClass
+    {
+        if (!isset($this->reflectionClasses[$className])) {
+            $this->reflectionClasses[$className] = new ReflectionClass($className);
+        }
+
+        return $this->reflectionClasses[$className];
     }
 
     /**
