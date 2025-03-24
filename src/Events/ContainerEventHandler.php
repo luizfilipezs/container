@@ -7,21 +7,41 @@ use Luizfilipezs\Container\Enums\ContainerEvent;
 use Luizfilipezs\Container\Interfaces\ContainerEventHandlerInterface;
 
 #[Singleton]
-class ContainerEventHandler implements ContainerEventHandlerInterface
+final class ContainerEventHandler implements ContainerEventHandlerInterface
 {
+    /**
+     * Callbacks called every time an event is emitted.
+     *
+     * @var array<string,callable[]>
+     */
     private array $events = [];
+
+    /**
+     * Callbacks called only once when an event is emitted.
+     *
+     * @var array<string,callable[]>
+     */
     private array $onceEvents = [];
 
+    /**
+     * {@inheritdoc}
+     */
     public function once(ContainerEvent $event, callable $callback): void
     {
         $this->events[$event->value][] = $callback;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function on(ContainerEvent $event, callable $callback): void
     {
         $this->events[$event->value][] = $callback;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function off(ContainerEvent $event, callable $callback): void
     {
         if (isset($this->events[$event->value])) {
@@ -39,6 +59,9 @@ class ContainerEventHandler implements ContainerEventHandlerInterface
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function emit(ContainerEvent $event, ...$args): void
     {
         $fixedCallbacks = $this->events[$event->value] ?? [];
