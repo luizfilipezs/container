@@ -478,10 +478,10 @@ class Container
                 "Container cannot inject \"{$definition}\". It is null and parameter is not nullable.",
             );
         }
-        
+
         $paramType = $param->getType()->getName();
         $valueType = $this->normalizeType(gettype($value));
-        
+
         if ($paramType !== $valueType) {
             throw new ContainerException(
                 sprintf(
@@ -498,7 +498,7 @@ class Container
 
     /**
      * Normalizes a type (i.e. converts "integer" to "int").
-     * 
+     *
      * @param string $type Type.
      */
     private function normalizeType(string $type): string
@@ -506,17 +506,17 @@ class Container
         return match ($type) {
             'integer' => 'int',
             'boolean' => 'bool',
-            'double'  => 'float',
-            'NULL'    => 'null',
-            default   => $type,
+            'double' => 'float',
+            'NULL' => 'null',
+            default => $type,
         };
     }
 
     /**
      * Checks if a parameter can be set as `null`.
-     * 
+     *
      * @param ReflectionParameter $param Parameter reflection.
-     * 
+     *
      * @return bool If parameter can be skipped.
      */
     private function canSkipParam(ReflectionParameter $param): bool
@@ -534,9 +534,9 @@ class Container
 
     /**
      * Checks if the given type is a class or an interface.
-     * 
+     *
      * @param string $type Type.
-     * 
+     *
      * @return bool If type is a class or an interface.
      */
     private function isClassOrInterface(string $type): bool
