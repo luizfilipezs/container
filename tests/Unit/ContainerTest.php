@@ -12,7 +12,7 @@ use Luizfilipezs\Container\Tests\Data\Lazy\{
     LazyObjectWithSkippedAttribute,
     LazyObjectWithoutConstructor,
 };
-use Luizfilipezs\Container\Tests\Data\Singleton\SingletonObject;
+use Luizfilipezs\Container\Tests\Data\Singleton\{EmptySingleton, SingletonObject};
 use Luizfilipezs\Container\Tests\Data\{
     EmptyObject,
     ObjectWithDeepDependencies,
@@ -463,5 +463,16 @@ final class ContainerTest extends TestCase
         $instance->normalProp;
 
         $this->assertTrue($constructed);
+    }
+
+    public function testGetSingletonObjectViaInterfaceDefinition(): void
+    {
+        $this->container->set(EmptyInterface::class, EmptySingleton::class);
+
+        $instanceViaInterface = $this->container->get(EmptyInterface::class);
+        $this->assertInstanceOf(EmptySingleton::class, $instanceViaInterface);
+
+        $instanceViaClass = $this->container->get(EmptySingleton::class);
+        $this->assertSame($instanceViaInterface, $instanceViaClass);
     }
 }
