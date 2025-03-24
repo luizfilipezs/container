@@ -7,6 +7,7 @@ use Luizfilipezs\Container\Enums\EventName;
 use Luizfilipezs\Container\Events\EventHandler;
 use Luizfilipezs\Container\Exceptions\ContainerException;
 use Luizfilipezs\Container\Interfaces\EventHandlerInterface;
+use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionParameter;
 
@@ -29,11 +30,15 @@ class Container
      * Constructor.
      * 
      * @param bool $strict If true, only defined classes and values will be provided.
-     * @param bool $skipNullParams If true, null parameters will not be injected.
+     * @param bool $skipNullableClassParams If true, parameters typed as some class or null
+     * will be skipped.
+     * @param bool $skipNullableValueParams If true, parameters typed as some value or null
+     * will be skipped.
      */
     public function __construct(
         bool $strict = false,
-        public readonly bool $skipNullParams = true,
+        public readonly bool $skipNullableClassParams = true,
+        public readonly bool $skipNullableValueParams = true,
     ) {
         $this->eventHandler = $this->get(EventHandler::class);
         $this->strict = $strict;
@@ -415,25 +420,22 @@ class Container
             $injectAttribute = $param->getAttributes(Inject::class)[0] ?? null;
 
             if ($injectAttribute !== null) {
-                $arguments[] = $this->getParamValueFromDefinition(
-                    param: $param,
-                    definition: $injectAttribute->newInstance()->identifier,
-                );
+                $arguments[] = $this->getInjectableParamValue($param, $injectAttribute);
                 continue;
             }
 
-            if ($this->skipNullParams && $param->allowsNull()) {
+            if ($this->canSkipParam($param)) {
                 $arguments[] = null;
                 continue;
             }
 
             if (in_array($paramType, ['self', 'parent', 'static'])) {
                 throw new ContainerException(
-                    "Container cannot inject {$paramType}. A constructor dependency cannot refer to the same class.",
+                    "Container cannot inject {$paramType}. A constructor dependency cannot refer to itself.",
                 );
             }
 
-            if (class_exists($paramType)) {
+            if ($this->isClassOrInterface($paramType)) {
                 $arguments[] = $this->get($paramType);
                 continue;
             }
@@ -450,23 +452,31 @@ class Container
      * Gets a parameter value from its definition on the container.
      *
      * @param ReflectionParameter $param Parameter reflection.
+     * @param ReflectionAttribute $injectAttribute `Inject` attribute reflection.
      *
      * @return mixed Parameter value.
      *
      * @throws ContainerException If definition is invalid or does not exist.
      */
-    private function getParamValueFromDefinition(ReflectionParameter $param, string $definition): mixed
-    {
+    private function getInjectableParamValue(
+        ReflectionParameter $param,
+        ReflectionAttribute $injectAttribute,
+    ): mixed {
+        $definition = $injectAttribute->newInstance()->identifier;
         $value = $this->getValue($definition);
 
         if ($value === null) {
-            if (!$param->allowsNull()) {
-                throw new ContainerException(
-                    "Container cannot inject \"{$definition}\". It is null and parameter is not nullable.",
-                );
+            if ($this->isClassOrInterface($definition)) {
+                return $this->get($definition);
             }
-            
-            return null;
+
+            if ($param->allowsNull()) {
+                return null;
+            }
+
+            throw new ContainerException(
+                "Container cannot inject \"{$definition}\". It is null and parameter is not nullable.",
+            );
         }
         
         $paramType = $param->getType()->getName();
@@ -500,5 +510,37 @@ class Container
             'NULL'    => 'null',
             default   => $type,
         };
+    }
+
+    /**
+     * Checks if a parameter can be set as `null`.
+     * 
+     * @param ReflectionParameter $param Parameter reflection.
+     * 
+     * @return bool If parameter can be skipped.
+     */
+    private function canSkipParam(ReflectionParameter $param): bool
+    {
+        if (!$param->allowsNull()) {
+            return false;
+        }
+
+        if ($this->isClassOrInterface($param->getType()->getName())) {
+            return $this->skipNullableClassParams;
+        }
+
+        return $this->skipNullableValueParams;
+    }
+
+    /**
+     * Checks if the given type is a class or an interface.
+     * 
+     * @param string $type Type.
+     * 
+     * @return bool If type is a class or an interface.
+     */
+    private function isClassOrInterface(string $type): bool
+    {
+        return class_exists($type) || interface_exists($type);
     }
 }
