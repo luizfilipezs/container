@@ -129,10 +129,16 @@ $myInstance->skippedProp;
 $myInstance->normalProp; // 'Constructor was called.'
 ```
 
-A more elegant way to know when a lazy `__construct` gets called is by using container's `eventHandler`:
+#### Capturing lazy construction
+
+To know when a lazy `__construct` gets called you can use `ContainerEventHandlerInterface`:
 
 ```php
-$container->eventHandler->on(
+use Luizfilipezs\Container\Enums\ContainerEvent;
+use Luizfilipezs\Container\Interfaces\ContainerEventHandlerInterface;
+
+$eventHandler = $container->get(ContainerEventHandlerInterface::class);
+$eventHandler->on(
     event: ContainerEvent::LAZY_CLASS_CONSTRUCTED,
     callback: static function (string $className, object $instance) {
         echo "{$className}::__construct was called.";
