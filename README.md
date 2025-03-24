@@ -69,7 +69,7 @@ use Luizfilipezs\Container\Attributes\Singleton;
 #[Singleton]
 class UserService
 {
-    public string $foo = 'bar';
+  public string $foo = 'bar';
 }
 
 $userService1 = $container->get(UserService::class);
@@ -114,8 +114,8 @@ use Luizfilipezs\Container\Attributes\Inject;
 
 enum ApiConstant: string
 {
-    case API_KEY = 'API_KEY';
-    case API_SECRET = 'API_SECRET';
+  case API_KEY = 'API_KEY';
+  case API_SECRET = 'API_SECRET';
 }
 
 $container->setValue(ApiConstant::API_KEY, 'my_api_key');
@@ -123,10 +123,10 @@ $container->setValue(ApiConstant::API_SECRET, 'my_api_secret');
 
 class ApiService
 {
-    public function __construct(
-        #[Inject(ApiConstant::API_KEY)] string $apiKey,
-        #[Inject(ApiConstant::API_SECRET)] string $apiSecret,
-    ) {}
+  public function __construct(
+    #[Inject(ApiConstant::API_KEY)] string $apiKey,
+    #[Inject(ApiConstant::API_SECRET)] string $apiSecret,
+  ) {}
 }
 ```
 
@@ -137,7 +137,7 @@ $container->setValue('SOME_INT', 123);
 
 class MyClass
 {
-    public function __contruct(#[Inject('SOME_INT')] float $value) {}
+  public function __contruct(#[Inject('SOME_INT')] float $value) {}
 }
 
 $object = $container->get(MyClass::class);
@@ -153,6 +153,65 @@ $value = $container->getValue('key'); // 'value'
 $exists = $container->hasValue('key'); // true
 $container->removeValue('key');
 ```
+
+### Advanced options
+
+`Container` constructor has three paramters:
+
+- `strict` (default to `false`): if `true`, only definitions set explicitly (via `set()`) will be provided.
+- `skipNullableClassParams` (defaults to `true`): if `true`, nullable constructor parameters typed as a class or an interface will always be set to `null`, except if the parameter has a `Inject` attribute bound to it.
+- `skipNullableValueParams` (defaults to `true`): if `true`, nullable constructor parameters typed as a primitive type will always be set to `null`, except if the parameter has a `Inject` attribute bound to it.
+
+#### Example with `strict`:
+
+```php
+$container = new Container(strict: true);
+
+// ContainerException, because there is explicit definition for "SomeClass"
+$instance = $container->get(SomeClass::class);
+```
+
+#### Examples with `skipNullableClassParams`
+
+If `true`:
+
+```php
+$container = new Container(skipNullableClassParams: true);
+$instance = $container->get(SomeClass::class);
+
+$instance->nullableDependency; // null
+```
+
+If `false`:
+
+```php
+$container = new Container(skipNullableClassParams: false);
+$instance = $container->get(SomeClass::class);
+
+$instance->nullableDependency; // object
+```
+
+#### Examples with `skipNullableValueParams`
+
+If `true`:
+
+```php
+$container = new Container(skipNullableClassParams: true);
+$instance = $container->get(SomeClass::class);
+
+$instance->nullableString; // null
+```
+
+If `false`:
+
+```php
+$container = new Container(skipNullableClassParams: false);
+$instance = $container->get(SomeClass::class);
+
+$instance->nullableString; // error, because string cannot be injected
+```
+
+In both examples above, **if the nullable parameter was bound to the `Inject` attribute, the value would be injected anyway**, because it forces injection.
 
 ## Contributing
 
