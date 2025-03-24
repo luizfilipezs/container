@@ -225,7 +225,7 @@ class Container
             );
         }
 
-        return $this->getUndefined($definition);
+        return $this->getUndefined($definition, bindSingletonTo: $className);
     }
 
     /**
@@ -282,10 +282,12 @@ class Container
      * @template T
      *
      * @param class-string<T> $className Class name.
+     * @param class-string|null $bindSingletonTo Class name to bind the singleton to, if
+     * the created object is a singleton.
      *
      * @return T Class instance.
      */
-    private function getUndefined(string $className): mixed
+    private function getUndefined(string $className, ?string $bindSingletonTo = null): mixed
     {
         $reflectionClass = new ReflectionClass($className);
         $instance = $this->isLazy($reflectionClass)
@@ -294,6 +296,7 @@ class Container
 
         if ($this->isSingleton($reflectionClass)) {
             $this->set($className, $instance);
+            $bindSingletonTo && $this->set($bindSingletonTo, $instance);
         }
 
         return $instance;
