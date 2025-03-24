@@ -215,7 +215,7 @@ $container->removeValue('key');
 
 ### Advanced options
 
-`Container` constructor has three paramters:
+`Container` constructor has three parameters:
 
 - `strict` (defaults to `false`): if `true`, only definitions set explicitly (via `set()`) will be provided.
 - `skipNullableClassParams` (defaults to `true`): if `true`, nullable constructor parameters typed as a class or an interface will always be set to `null`, except if the parameter has the `Inject` attribute bound to it.
@@ -226,7 +226,7 @@ $container->removeValue('key');
 ```php
 $container = new Container(strict: true);
 
-// ContainerException, because there is not explicit definition for "SomeClass"
+// ContainerException, because there is no explicit definition for "SomeClass"
 $instance = $container->get(SomeClass::class);
 ```
 
