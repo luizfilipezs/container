@@ -361,15 +361,16 @@ class Container
     {
         $this->checkLazyConstructor($reflectionClass);
 
-        return $reflectionClass->newLazyGhost(function ($instance) use ($reflectionClass) {
-            $instance->__construct(...$this->createConstructorArgs($reflectionClass));
+        $instance = $reflectionClass->newLazyGhost(
+            fn(object $unconstructedInstance) => $this->constructLazyGhost(
+                $reflectionClass,
+                $unconstructedInstance,
+            ),
+        );
 
-            $this->eventHandler->emit(
-                EventName::LAZY_CLASS_CONSTRUCTED->value,
-                $reflectionClass->getName(),
-                $instance,
-            );
-        });
+        $this->enableLazyInitializationSkippingProperties($reflectionClass, $instance);
+
+        return $instance;
     }
 
     /**
@@ -391,6 +392,45 @@ class Container
                     $reflectionClass->getName(),
                 ),
             );
+        }
+    }
+
+    /**
+     * Calls the constructor of a lazy class.
+     *
+     * @param ReflectionClass $reflectionClass Class reflection.
+     * @param object $unconstructedInstance Instance to be constructed.
+     */
+    private function constructLazyGhost(
+        ReflectionClass $reflectionClass,
+        object $unconstructedInstance,
+    ): void {
+        $unconstructedInstance->__construct(...$this->createConstructorArgs($reflectionClass));
+
+        $this->eventHandler->emit(
+            ContainerEvent::LAZY_CLASS_CONSTRUCTED,
+            $reflectionClass->getName(),
+            $unconstructedInstance,
+        );
+    }
+
+    /**
+     * Configures properties that can skip lazy initialization.
+     *
+     * @param ReflectionClass $reflectionClass Class reflection.
+     * @param object $classInstance Class instance to the which the configuration is applied.
+     */
+    private function enableLazyInitializationSkippingProperties(
+        ReflectionClass $reflectionClass,
+        object $classInstance,
+    ): void {
+        foreach ($reflectionClass->getProperties() as $reflectionProperty) {
+            $skipsInitialization =
+                count($reflectionProperty->getAttributes(LazyInitializationSkipped::class)) > 0;
+
+            if ($skipsInitialization) {
+                $reflectionProperty->skipLazyInitialization($classInstance);
+            }
         }
     }
 

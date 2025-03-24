@@ -8,7 +8,11 @@ use Luizfilipezs\Container\Events\EventHandler;
 use Luizfilipezs\Container\Exceptions\ContainerException;
 use Luizfilipezs\Container\Interfaces\EventHandlerInterface;
 use Luizfilipezs\Container\Tests\Data\Interfaces\EmptyInterface;
-use Luizfilipezs\Container\Tests\Data\Lazy\{LazyObject, LazyObjectWithoutConstructor};
+use Luizfilipezs\Container\Tests\Data\Lazy\{
+    LazyObject,
+    LazyObjectWithSkippedAttribute,
+    LazyObjectWithoutConstructor,
+};
 use Luizfilipezs\Container\Tests\Data\Singleton\SingletonObject;
 use Luizfilipezs\Container\Tests\Data\{
     EmptyObject,
@@ -441,5 +445,27 @@ final class ContainerTest extends TestCase
         );
 
         $this->container->get(ObjectWithParentParam::class);
+    }
+
+    public function testGetLazyObjectWithSkippedProperty(): void
+    {
+        $constructed = false;
+
+        $eventHandler = $this->container->get(ContainerEventHandlerInterface::class);
+        $eventHandler->once(
+            event: ContainerEvent::LAZY_CLASS_CONSTRUCTED,
+            callback: static function () use (&$constructed) {
+                $constructed = true;
+            },
+        );
+
+        $instance = $this->container->get(LazyObjectWithSkippedAttribute::class);
+        $instance->skippedProp;
+
+        $this->assertFalse($constructed);
+
+        $instance->normalProp;
+
+        $this->assertTrue($constructed);
     }
 }
