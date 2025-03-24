@@ -79,6 +79,18 @@ $userService1->foo = 'baz';
 echo $userService2->foo; // 'baz'
 ```
 
+If you set a singleton class as definition for an interface, both the interface and the class will be set with the actual instance of the class as soon as it is created:
+
+```php
+$container->set(UserServiceInterface::class, UserService::class);
+
+$userServiceViaInterface = $container->get(UserServiceInterface::class);
+$userServiceViaInterface->setFoo('baz');
+
+$userServiceViaClass = $container->get(UserService::class);
+$userServiceViaClass->getFoo(); // 'baz'
+```
+
 ### Setting a class with lazy constructor
 
 Lazy constructor was natively implemented in PHP 8.4. It allows an object to be created without its `__construct` method getting called until

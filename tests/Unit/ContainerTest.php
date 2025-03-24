@@ -469,10 +469,13 @@ final class ContainerTest extends TestCase
     {
         $this->container->set(EmptyInterface::class, EmptySingleton::class);
 
-        $instanceViaInterface = $this->container->get(EmptyInterface::class);
-        $this->assertInstanceOf(EmptySingleton::class, $instanceViaInterface);
-
         $instanceViaClass = $this->container->get(EmptySingleton::class);
-        $this->assertSame($instanceViaInterface, $instanceViaClass);
+        $this->assertInstanceOf(EmptySingleton::class, $instanceViaClass);
+
+        $instanceViaInterface = $this->container->get(EmptyInterface::class);
+        $this->assertSame($instanceViaClass, $instanceViaInterface);
+
+        $newInstanceViaClass = $this->container->get(EmptySingleton::class);
+        $this->assertSame($instanceViaClass, $newInstanceViaClass);
     }
 }
