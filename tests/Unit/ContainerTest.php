@@ -3,10 +3,9 @@
 namespace Luizfilipezs\Container\Tests\Unit;
 
 use Luizfilipezs\Container\Container;
-use Luizfilipezs\Container\Enums\EventName;
-use Luizfilipezs\Container\Events\EventHandler;
+use Luizfilipezs\Container\Enums\{ContainerEvent};
 use Luizfilipezs\Container\Exceptions\ContainerException;
-use Luizfilipezs\Container\Interfaces\EventHandlerInterface;
+use Luizfilipezs\Container\Interfaces\ContainerEventHandlerInterface;
 use Luizfilipezs\Container\Tests\Data\Interfaces\EmptyInterface;
 use Luizfilipezs\Container\Tests\Data\Lazy\{
     LazyObject,
@@ -162,9 +161,6 @@ final class ContainerTest extends TestCase
         // create container with strict option
         $container = new Container(strict: true);
 
-        // set container dependency
-        $container->set(EventHandlerInterface::class, EventHandler::class);
-
         // assert exception when getting undefined class
         $this->expectException(ContainerException::class);
         $this->expectExceptionMessage(ObjectWithoutConstructor::class . ' has no definition.');
@@ -197,9 +193,9 @@ final class ContainerTest extends TestCase
     {
         $constructed = false;
 
-        $eventHandler = $this->container->get(EventHandler::class);
-        $eventHandler->on(
-            event: EventName::LAZY_CLASS_CONSTRUCTED->value,
+        $eventHandler = $this->container->get(ContainerEventHandlerInterface::class);
+        $eventHandler->once(
+            event: ContainerEvent::LAZY_CLASS_CONSTRUCTED,
             callback: function () use (&$constructed) {
                 $constructed = true;
             },
@@ -251,9 +247,9 @@ final class ContainerTest extends TestCase
         $instance = $this->container->get(ObjectWithLazyDependency::class);
         $depConstructed = false;
 
-        $eventHandler = $this->container->get(EventHandler::class);
-        $eventHandler->on(
-            event: EventName::LAZY_CLASS_CONSTRUCTED->value,
+        $eventHandler = $this->container->get(ContainerEventHandlerInterface::class);
+        $eventHandler->once(
+            event: ContainerEvent::LAZY_CLASS_CONSTRUCTED,
             callback: function () use (&$depConstructed) {
                 $depConstructed = true;
             },

@@ -2,11 +2,11 @@
 
 namespace Luizfilipezs\Container;
 
-use Luizfilipezs\Container\Attributes\{Inject, Lazy, Singleton};
-use Luizfilipezs\Container\Enums\EventName;
-use Luizfilipezs\Container\Events\EventHandler;
+use Luizfilipezs\Container\Attributes\{Inject, Lazy, LazyInitializationSkipped, Singleton};
+use Luizfilipezs\Container\Enums\ContainerEvent;
+use Luizfilipezs\Container\Events\{ContainerEventHandler};
 use Luizfilipezs\Container\Exceptions\ContainerException;
-use Luizfilipezs\Container\Interfaces\EventHandlerInterface;
+use Luizfilipezs\Container\Interfaces\{ContainerEventHandlerInterface};
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionParameter;
@@ -17,31 +17,26 @@ use ReflectionParameter;
 class Container
 {
     /**
-     * If true, only defined classes and values will be provided.
+     * Container event handler.
      */
-    private(set) bool $strict = false;
-
-    /**
-     * Event handler.
-     */
-    private readonly EventHandlerInterface $eventHandler;
+    private readonly ContainerEventHandlerInterface $eventHandler;
 
     /**
      * Constructor.
-     * 
-     * @param bool $strict If true, only defined classes and values will be provided.
+     *
+     * @param bool $strict Wether to provide only defined classes and values. If true, only
+     * defined classes and values will be provided. Defaults to `false`.
      * @param bool $skipNullableClassParams If true, parameters typed as some class or null
-     * will be skipped.
+     * will be skipped. Defaults to `true`.
      * @param bool $skipNullableValueParams If true, parameters typed as some value or null
-     * will be skipped.
+     * will be skipped. Defaults to `true`.
      */
     public function __construct(
-        bool $strict = false,
+        public readonly bool $strict = false,
         public readonly bool $skipNullableClassParams = true,
         public readonly bool $skipNullableValueParams = true,
     ) {
-        $this->eventHandler = $this->get(EventHandler::class);
-        $this->strict = $strict;
+        $this->eventHandler = $this->get(ContainerEventHandlerInterface::class);
     }
 
     /**
@@ -49,7 +44,9 @@ class Container
      *
      * @var array<string,class-string,callable,object>
      */
-    private array $definitions = [];
+    private array $definitions = [
+        ContainerEventHandlerInterface::class => ContainerEventHandler::class,
+    ];
 
     /**
      * Value definitions.
