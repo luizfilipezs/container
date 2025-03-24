@@ -2,7 +2,7 @@
 
 namespace Luizfilipezs\Container\Enums;
 
-enum EventName: string
+enum ContainerEvent: string
 {
     case LAZY_CLASS_CONSTRUCTED = 'lazyClassConstructed';
 }
