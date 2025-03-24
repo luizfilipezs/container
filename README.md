@@ -172,6 +172,9 @@ class ApiService
     #[Inject(ApiConstant::API_SECRET)] string $apiSecret,
   ) {}
 }
+
+// call __construct with: 'my_api_key', 'my_api_secret'
+$apiService = $container->get(ApiService::class);
 ```
 
 Any type of value can be set, but it will be strictly compared to the parameter type:
