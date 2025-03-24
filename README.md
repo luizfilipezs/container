@@ -105,6 +105,44 @@ $userService = $container->get(UserService::class);
 $users = $userService->getAll(); // 'Constructor was called.'
 ```
 
+It is also possible to disable initialization on reading specific properties:
+
+```php
+use Luizfilipezs\Container\Attributes\{Lazy, LazyInitializationSkipped};
+
+#[Lazy]
+class MyClass
+{
+    #[LazyInitializationSkipped]
+    public string $skippedProp = 'foo';
+    public string $normalProp = 'bar';
+
+    public function __construct()
+    {
+        echo 'Constructor was called.';
+    }
+}
+
+$myInstance = $container->get(MyClass::class);
+
+$myInstance->skippedProp;
+$myInstance->normalProp; // 'Constructor was called.'
+```
+
+A more elegant way to know when a lazy `__construct` gets called is by using container's `eventHandler`:
+
+```php
+$container->eventHandler->on(
+    event: ContainerEvent::LAZY_CLASS_CONSTRUCTED,
+    callback: static function (string $className, object $instance) {
+        echo "{$className}::__construct was called.";
+    },
+);
+
+$instance = $container->get(MyClass::class);
+$instance->foo; // 'MyClass::__construct was called.'
+```
+
 ### Setting non-class definitions
 
 You can set a definition for any value, allowing it to get automatically injected even if it is not a class.
@@ -158,16 +196,16 @@ $container->removeValue('key');
 
 `Container` constructor has three paramters:
 
-- `strict` (default to `false`): if `true`, only definitions set explicitly (via `set()`) will be provided.
-- `skipNullableClassParams` (defaults to `true`): if `true`, nullable constructor parameters typed as a class or an interface will always be set to `null`, except if the parameter has a `Inject` attribute bound to it.
-- `skipNullableValueParams` (defaults to `true`): if `true`, nullable constructor parameters typed as a primitive type will always be set to `null`, except if the parameter has a `Inject` attribute bound to it.
+- `strict` (defaults to `false`): if `true`, only definitions set explicitly (via `set()`) will be provided.
+- `skipNullableClassParams` (defaults to `true`): if `true`, nullable constructor parameters typed as a class or an interface will always be set to `null`, except if the parameter has the `Inject` attribute bound to it.
+- `skipNullableValueParams` (defaults to `true`): if `true`, nullable constructor parameters typed as a primitive type will always be set to `null`, except if the parameter has the `Inject` attribute bound to it.
 
 #### Example with `strict`:
 
 ```php
 $container = new Container(strict: true);
 
-// ContainerException, because there is explicit definition for "SomeClass"
+// ContainerException, because there is not explicit definition for "SomeClass"
 $instance = $container->get(SomeClass::class);
 ```
 
