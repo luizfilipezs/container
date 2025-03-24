@@ -22,6 +22,22 @@ class Container
     private readonly ContainerEventHandlerInterface $eventHandler;
 
     /**
+     * Class definitions.
+     *
+     * @var array<string,class-string,callable,object>
+     */
+    private array $definitions = [
+        ContainerEventHandlerInterface::class => ContainerEventHandler::class,
+    ];
+
+    /**
+     * Value definitions.
+     *
+     * @var array<string,mixed>
+     */
+    private array $valueDefinitions = [];
+
+    /**
      * Constructor.
      *
      * @param bool $strict Wether to provide only defined classes and values. If true, only
@@ -38,22 +54,6 @@ class Container
     ) {
         $this->eventHandler = $this->get(ContainerEventHandlerInterface::class);
     }
-
-    /**
-     * Class definitions.
-     *
-     * @var array<string,class-string,callable,object>
-     */
-    private array $definitions = [
-        ContainerEventHandlerInterface::class => ContainerEventHandler::class,
-    ];
-
-    /**
-     * Value definitions.
-     *
-     * @var array<string,mixed>
-     */
-    private array $valueDefinitions = [];
 
     /**
      * Gets a class instance.
