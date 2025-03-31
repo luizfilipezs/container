@@ -100,10 +100,14 @@ class Container
      * @param class-string<T> $className Class name.
      * @param T|class-string<T>|callable|callable(): T|null $definition Class definition.
      * If null, the class name will be used as definition.
+     *
+     * @return self The current container.
      */
-    public function set(string $className, mixed $definition = null): void
+    public function set(string $className, mixed $definition = null): self
     {
         $this->definitions[$className] = $definition ?? $className;
+
+        return $this;
     }
 
     /**
@@ -175,10 +179,14 @@ class Container
      *
      * @param string $identifier Value identifier.
      * @param mixed $value Value definition.
+     *
+     * @return self The current container.
      */
-    public function setValue(string $identifier, mixed $value): void
+    public function setValue(string $identifier, mixed $value): self
     {
         $this->valueDefinitions[$identifier] = $value;
+
+        return $this;
     }
 
     /**
