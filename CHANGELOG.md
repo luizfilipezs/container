@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.2
+
+- Add `declare(strict_types=1)` to all files.
+
 ## 1.0.1
 
 - Remove `Singleton` attribute from `ContainerEventHandler` class.
