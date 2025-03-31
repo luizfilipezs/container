@@ -77,6 +77,30 @@ final class ContainerTest extends TestCase
         $this->assertFalse($this->container->has(ObjectWithoutConstructor::class));
     }
 
+    public function testGetDefinitions(): void
+    {
+        $this->container->set(ObjectWithoutConstructor::class);
+        $this->container->set(ObjectWithDependencies::class);
+
+        $this->assertSame(
+            [
+                ObjectWithoutConstructor::class => ObjectWithoutConstructor::class,
+                ObjectWithDependencies::class => ObjectWithDependencies::class,
+            ],
+            $this->container->getDefinitions(),
+        );
+    }
+
+    public function testGetDefinition(): void
+    {
+        $this->container->set(ObjectWithoutConstructor::class);
+
+        $this->assertSame(
+            ObjectWithoutConstructor::class,
+            $this->container->getDefinition(ObjectWithoutConstructor::class),
+        );
+    }
+
     public function testGetClassStringDefinition(): void
     {
         $this->container->set(ObjectWithoutConstructor::class);
@@ -279,6 +303,27 @@ final class ContainerTest extends TestCase
         $this->assertFalse($this->container->hasValue('KEY'));
         $this->container->setValue('KEY', 'VALUE');
         $this->assertTrue($this->container->hasValue('KEY'));
+    }
+
+    public function testGetValueDefinitions(): void
+    {
+        $this->container->setValue('key1', 'value1');
+        $this->container->setValue('key2', 'value2');
+
+        $this->assertSame(
+            ['key1' => 'value1', 'key2' => 'value2'],
+            $this->container->getValueDefinitions(),
+        );
+    }
+
+    public function testGetValueDefinition(): void
+    {
+        $this->container->setValue('key1', 'value1');
+
+        $this->assertSame(
+            ['key1' => 'value1'],
+            $this->container->getValueDefinitions(),
+        );
     }
 
     public function testGetValue(): void
