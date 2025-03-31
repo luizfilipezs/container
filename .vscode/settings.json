@@ -1,18 +1,10 @@
 {
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "[php]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "editor.formatOnSave": false,
   "emeraldwalk.runonsave": {
     "commands": [
       {
         "match": "\\.php$",
-        "cmd": "PHP_CS_FIXER_IGNORE_ENV=1 ./vendor/bin/php-cs-fixer fix \"${file}\""
-      },
-      {
-        "match": "\\.(php|json)$",
-        "cmd": "npm run prettier \"${file}\""
+        "cmd": "set PHP_CS_FIXER_IGNORE_ENV=1 && composer fix \"${file}\""
       }
     ]
   },
