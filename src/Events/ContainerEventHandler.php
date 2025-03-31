@@ -2,11 +2,12 @@
 
 namespace Luizfilipezs\Container\Events;
 
-use Luizfilipezs\Container\Attributes\Singleton;
 use Luizfilipezs\Container\Enums\ContainerEvent;
 use Luizfilipezs\Container\Interfaces\ContainerEventHandlerInterface;
 
-#[Singleton]
+/**
+ * Event handler for the container.
+ */
 final class ContainerEventHandler implements ContainerEventHandlerInterface
 {
     /**

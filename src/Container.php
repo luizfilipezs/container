@@ -17,6 +17,11 @@ use ReflectionParameter;
 class Container
 {
     /**
+     * Container event handler.
+     */
+    private(set) ContainerEventHandlerInterface $eventHandler;
+
+    /**
      * Class definitions.
      *
      * @var array<string,class-string,callable,object>
@@ -38,11 +43,6 @@ class Container
     private array $reflectionClasses = [];
 
     /**
-     * Container event handler.
-     */
-    private readonly ContainerEventHandlerInterface $eventHandler;
-
-    /**
      * Constructor.
      *
      * @param bool $strict Wether to provide only defined classes and values. If true, only
@@ -58,9 +58,6 @@ class Container
         public readonly bool $skipNullableValueParams = true,
     ) {
         $this->eventHandler = new ContainerEventHandler();
-
-        $this->set(ContainerEventHandlerInterface::class, $this->eventHandler);
-        $this->set(ContainerEventHandler::class, $this->eventHandler);
     }
 
     /**
@@ -130,6 +127,30 @@ class Container
     }
 
     /**
+     * Returns all class definitions.
+     * 
+     * @return array<string,class-string|callable|object> Class definitions.
+     */
+    public function getDefinitions(): array
+    {
+        return $this->definitions;
+    }
+
+    /**
+     * Gets a class definition.
+     * 
+     * @template T
+     * 
+     * @param class-string<T> $className Class name.
+     *
+     * @return null|T|class-string<T>|callable(): T Class definition.
+     */
+    public function getDefinition(string $className): mixed
+    {
+        return $this->definitions[$className] ?? null;
+    }
+
+    /**
      * Gets a value definition.
      *
      * @param string $identifier Value identifier.
@@ -181,6 +202,28 @@ class Container
     }
 
     /**
+     * Returns all value definitions.
+     * 
+     * @return array<string,mixed> Value definitions.
+     */
+    public function getValueDefinitions(): mixed
+    {
+        return $this->valueDefinitions;
+    }
+
+    /**
+     * Gets a value definition.
+     * 
+     * @param string $identifier Value identifier.
+     * 
+     * @return mixed Value definition.
+     */
+    public function getValueDefinition(string $identifier): mixed
+    {
+        return $this->valueDefinitions[$identifier] ?? null;
+    }
+
+    /**
      * Gets an instance from its class definition.
      *
      * @template T
@@ -193,7 +236,7 @@ class Container
      */
     private function getFromDefinition(string $className): mixed
     {
-        $definition = $this->definitions[$className];
+        $definition = $this->getDefinition($className);
 
         if (is_string($definition)) {
             return $this->getFromClassStringDefinition($className, $definition);

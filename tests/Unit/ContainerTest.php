@@ -5,14 +5,6 @@ namespace Luizfilipezs\Container\Tests\Unit;
 use Luizfilipezs\Container\Container;
 use Luizfilipezs\Container\Enums\{ContainerEvent};
 use Luizfilipezs\Container\Exceptions\ContainerException;
-use Luizfilipezs\Container\Interfaces\ContainerEventHandlerInterface;
-use Luizfilipezs\Container\Tests\Data\Interfaces\EmptyInterface;
-use Luizfilipezs\Container\Tests\Data\Lazy\{
-    LazyObject,
-    LazyObjectWithSkippedAttribute,
-    LazyObjectWithoutConstructor,
-};
-use Luizfilipezs\Container\Tests\Data\Singleton\{EmptySingleton, SingletonObject};
 use Luizfilipezs\Container\Tests\Data\{
     EmptyObject,
     ObjectWithDeepDependencies,
@@ -29,6 +21,13 @@ use Luizfilipezs\Container\Tests\Data\{
     ObjectWithSingletonDependency,
     ObjectWithoutConstructor,
 };
+use Luizfilipezs\Container\Tests\Data\Interfaces\EmptyInterface;
+use Luizfilipezs\Container\Tests\Data\Lazy\{
+    LazyObject,
+    LazyObjectWithSkippedAttribute,
+    LazyObjectWithoutConstructor,
+};
+use Luizfilipezs\Container\Tests\Data\Singleton\{EmptySingleton, SingletonObject};
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -104,7 +103,7 @@ final class ContainerTest extends TestCase
     public function testGetCallableDefinition(): void
     {
         $instance = new ObjectWithoutConstructor();
-        $this->container->set(ObjectWithoutConstructor::class, fn() => $instance);
+        $this->container->set(ObjectWithoutConstructor::class, fn () => $instance);
 
         $this->assertSame($instance, $this->container->get(ObjectWithoutConstructor::class));
     }
@@ -112,7 +111,7 @@ final class ContainerTest extends TestCase
     public function testGetInvalidCallableDefinition(): void
     {
         $instance = new stdClass();
-        $this->container->set(ObjectWithoutConstructor::class, fn() => $instance);
+        $this->container->set(ObjectWithoutConstructor::class, fn () => $instance);
 
         $this->expectException(ContainerException::class);
         $this->expectExceptionMessage(
@@ -193,8 +192,7 @@ final class ContainerTest extends TestCase
     {
         $constructed = false;
 
-        $eventHandler = $this->container->get(ContainerEventHandlerInterface::class);
-        $eventHandler->once(
+        $this->container->eventHandler->once(
             event: ContainerEvent::LAZY_CLASS_CONSTRUCTED,
             callback: function () use (&$constructed) {
                 $constructed = true;
@@ -247,8 +245,7 @@ final class ContainerTest extends TestCase
         $instance = $this->container->get(ObjectWithLazyDependency::class);
         $depConstructed = false;
 
-        $eventHandler = $this->container->get(ContainerEventHandlerInterface::class);
-        $eventHandler->once(
+        $this->container->eventHandler->once(
             event: ContainerEvent::LAZY_CLASS_CONSTRUCTED,
             callback: function () use (&$depConstructed) {
                 $depConstructed = true;
@@ -447,8 +444,7 @@ final class ContainerTest extends TestCase
     {
         $constructed = false;
 
-        $eventHandler = $this->container->get(ContainerEventHandlerInterface::class);
-        $eventHandler->once(
+        $this->container->eventHandler->once(
             event: ContainerEvent::LAZY_CLASS_CONSTRUCTED,
             callback: static function () use (&$constructed) {
                 $constructed = true;
