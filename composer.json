@@ -9,6 +9,10 @@
       "email": "filipeluiz.bs@gmail.com"
     }
   ],
+  "scripts": {
+    "fix": "php-cs-fixer fix",
+    "test": "phpunit tests"
+  },
   "require": {
     "php": "^8.4"
   },
