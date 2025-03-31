@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 use PhpCsFixer\{Config, Finder};
 
 return (new Config())
     ->setRiskyAllowed(true)
     ->setRules([
-        // ver todas as regras: https://cs.symfony.com/doc/rules/index.html
+        // https://cs.symfony.com/doc/rules/index.html
         '@PSR12' => true,
         'ordered_imports' => ['sort_algorithm' => 'alpha'],
         'single_import_per_statement' => false,
@@ -94,6 +96,7 @@ return (new Config())
         'no_extra_blank_lines' => true,
         'binary_operator_spaces' => ['default' => 'single_space'],
         'no_space_around_double_colon' => true,
+        'declare_strict_types' => true,
     ])
     ->setFinder(
         Finder::create()

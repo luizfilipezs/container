@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Luizfilipezs\Container\Interfaces;
 
 use Luizfilipezs\Container\Enums\ContainerEvent;

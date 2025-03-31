@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Luizfilipezs\Container\Events;
 
 use Luizfilipezs\Container\Enums\ContainerEvent;
@@ -50,7 +52,7 @@ final class ContainerEventHandler implements ContainerEventHandlerInterface
 
         $this->callbacks[$event->value] = array_filter(
             $this->callbacks[$event->value],
-            fn($item) => $item['callback'] !== $callback,
+            fn ($item) => $item['callback'] !== $callback,
         );
     }
 

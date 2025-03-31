@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Luizfilipezs\Container;
 
 use Luizfilipezs\Container\Attributes\{Inject, Lazy, LazyInitializationSkipped, Singleton};
@@ -19,7 +21,7 @@ class Container
     /**
      * Container event handler.
      */
-    private(set) ContainerEventHandlerInterface $eventHandler;
+    private(set) public ContainerEventHandlerInterface $eventHandler;
 
     /**
      * Class definitions.
@@ -67,9 +69,9 @@ class Container
      *
      * @param class-string<T> $className Class name.
      *
+     * @throws ContainerException If instance cannot be created.
      * @return T Class instance.
      *
-     * @throws ContainerException If instance cannot be created.
      */
     public function get(string $className): mixed
     {
@@ -96,7 +98,7 @@ class Container
      * @template T
      *
      * @param class-string<T> $className Class name.
-     * @param null|T|class-string<T>|callable|callable(): T $definition Class definition.
+     * @param T|class-string<T>|callable|callable(): T|null $definition Class definition.
      * If null, the class name will be used as definition.
      */
     public function set(string $className, mixed $definition = null): void
@@ -128,7 +130,7 @@ class Container
 
     /**
      * Returns all class definitions.
-     * 
+     *
      * @return array<string,class-string|callable|object> Class definitions.
      */
     public function getDefinitions(): array
@@ -138,12 +140,12 @@ class Container
 
     /**
      * Gets a class definition.
-     * 
+     *
      * @template T
-     * 
+     *
      * @param class-string<T> $className Class name.
      *
-     * @return null|T|class-string<T>|callable(): T Class definition.
+     * @return T|class-string<T>|callable(): T|null Class definition.
      */
     public function getDefinition(string $className): mixed
     {
@@ -203,7 +205,7 @@ class Container
 
     /**
      * Returns all value definitions.
-     * 
+     *
      * @return array<string,mixed> Value definitions.
      */
     public function getValueDefinitions(): mixed
@@ -213,9 +215,9 @@ class Container
 
     /**
      * Gets a value definition.
-     * 
+     *
      * @param string $identifier Value identifier.
-     * 
+     *
      * @return mixed Value definition.
      */
     public function getValueDefinition(string $identifier): mixed
@@ -230,9 +232,9 @@ class Container
      *
      * @param class-string<T> $className Class name.
      *
+     * @throws ContainerException If definition is invalid or does not exist.
      * @return T Class instance.
      *
-     * @throws ContainerException If definition is invalid or does not exist.
      */
     private function getFromDefinition(string $className): mixed
     {
@@ -263,9 +265,9 @@ class Container
      * @param class-string<T> $className Class name.
      * @param string $definition Class string definition.
      *
+     * @throws ContainerException If class string definition is invalid.
      * @return T Class instance.
      *
-     * @throws ContainerException If class string definition is invalid.
      */
     private function getFromClassStringDefinition(string $className, string $definition): mixed
     {
@@ -294,9 +296,9 @@ class Container
      * @param class-string<T> $className Class name.
      * @param callable(): T $definition Callable that returns a class instance.
      *
+     * @throws ContainerException If the callable does not return an instance of the expected class.
      * @return T Class instance.
      *
-     * @throws ContainerException If the callable does not return an instance of the expected class.
      */
     private function getFromCallableDefinition(string $className, callable $definition): mixed
     {
@@ -319,9 +321,9 @@ class Container
      * @param class-string<T> $className Class name.
      * @param object $definition Class instance definition.
      *
+     * @throws ContainerException If the object definition is not an instance of the same class.
      * @return T Class instance.
      *
-     * @throws ContainerException If the object definition is not an instance of the same class.
      */
     private function getFromObjectDefinition(string $className, object $definition): mixed
     {
@@ -341,9 +343,9 @@ class Container
      *
      * @param class-string<T> $className Class name.
      *
+     * @throws \ReflectionException If the class does not exist.
      * @return T Class instance.
      *
-     * @throws \ReflectionException If the class does not exist.
      */
     private function getUndefined(string $className): mixed
     {
@@ -364,9 +366,9 @@ class Container
      *
      * @param string $className Class name.
      *
+     * @throws \ReflectionException If the class does not exist.
      * @return ReflectionClass Class reflection.
      *
-     * @throws \ReflectionException If the class does not exist.
      */
     private function getReflectionClass(string $className): ReflectionClass
     {
@@ -405,6 +407,7 @@ class Container
      * Checks wheter a class has an attribute.
      *
      * @param ReflectionClass $reflectionClass Class reflection.
+     * @param string $attributeClass
      *
      * @return bool If class has the attribute.
      */
@@ -440,7 +443,7 @@ class Container
         $this->checkLazyConstructor($reflectionClass);
 
         $instance = $reflectionClass->newLazyGhost(
-            fn(object $unconstructedInstance) => $this->constructLazyGhost(
+            fn (object $unconstructedInstance) => $this->constructLazyGhost(
                 $reflectionClass,
                 $unconstructedInstance,
             ),
@@ -517,10 +520,10 @@ class Container
      *
      * @param ReflectionClass $reflectionClass Class reflection.
      *
-     * @return mixed[] Constructor arguments.
-     *
      * @throws ContainerException If constructor arguments are invalid (i.e. refer to the same
      * entity, has no injection configuration or does not exist).
+     * @return mixed[] Constructor arguments.
+     *
      */
     private function createConstructorArgs(ReflectionClass $reflectionClass): array
     {
@@ -572,9 +575,9 @@ class Container
      * @param ReflectionParameter $param Parameter reflection.
      * @param ReflectionAttribute $injectAttribute `Inject` attribute reflection.
      *
+     * @throws ContainerException If definition is invalid or does not exist.
      * @return mixed Parameter value.
      *
-     * @throws ContainerException If definition is invalid or does not exist.
      */
     private function getInjectableParamValue(
         ReflectionParameter $param,
@@ -611,7 +614,7 @@ class Container
      * @param ReflectionParameter $param Parameter reflection.
      * @param string $definition Injection identifier.
      *
-     * @return null|object Parameter argument
+     * @return object|null Parameter argument
      */
     private function handleParamNullInjection(
         ReflectionParameter $param,
