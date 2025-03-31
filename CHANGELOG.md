@@ -4,14 +4,16 @@
 
 - Allow chaining `set` and `setValue` methods in `Container` class.
 
-Example:
+  Example:
 
-```php
-$container->set(UserServiceInterface::class, UserService::class)
-    ->set(UserRepositoryInterface::class, UserRepository::class)
-    ->setValue('foo', 'bar')
-    ->setValue('baz', 'qux');
-```
+  ```php
+  $container = new Container();
+
+  $container->set(UserServiceInterface::class, UserService::class)
+      ->set(UserRepositoryInterface::class, UserRepository::class)
+      ->setValue('foo', 'bar')
+      ->setValue('baz', 'qux');
+  ```
 
 ## 1.0.2
 
