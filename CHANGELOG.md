@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.0.3
+
+- Allow chaining `set` and `setValue` methods in `Container` class.
+
+Example:
+
+```php
+$container->set(UserServiceInterface::class, UserService::class)
+    ->set(UserRepositoryInterface::class, UserRepository::class)
+    ->setValue('foo', 'bar')
+    ->setValue('baz', 'qux');
+```
+
 ## 1.0.2
 
 - Add `declare(strict_types=1)` to all files.
