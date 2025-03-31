@@ -148,7 +148,7 @@ To know when a lazy `__construct` gets called you can call `Container::eventHand
 ```php
 use Luizfilipezs\Container\Enums\ContainerEvent;
 
-$container->$eventHandler->on(
+$container->eventHandler->on(
     event: ContainerEvent::LAZY_CLASS_CONSTRUCTED,
     callback: static function (string $className, object $instance) {
         echo "{$className}::__construct was called.";
