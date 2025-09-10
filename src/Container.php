@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Luizfilipezs\Container;
 
-use Luizfilipezs\Container\Attributes\{Inject, Lazy, LazyInitializationSkipped, Singleton};
 use Luizfilipezs\Container\Enums\ContainerEvent;
-use Luizfilipezs\Container\Events\{ContainerEventHandler};
+use Luizfilipezs\Container\Events\ContainerEventHandler;
 use Luizfilipezs\Container\Exceptions\ContainerException;
-use Luizfilipezs\Container\Interfaces\{ContainerEventHandlerInterface};
+use Luizfilipezs\Container\Helpers\{AttributeHelper, TypeHelper};
+use Luizfilipezs\Container\Interfaces\ContainerEventHandlerInterface;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionParameter;
@@ -357,12 +357,12 @@ class Container
      */
     private function getUndefined(string $className): mixed
     {
-        $reflectionClass = $this->getReflectionClass($className);
-        $instance = $this->isLazy($reflectionClass)
-            ? $this->instantiateLazy($reflectionClass)
-            : $this->instantiate($reflectionClass);
+        $reflection = $this->getReflectionClass($className);
+        $instance = AttributeHelper::hasLazy($reflection)
+            ? $this->instantiateLazy($reflection)
+            : $this->instantiate($reflection);
 
-        if ($this->isSingleton($reflectionClass)) {
+        if (AttributeHelper::hasSingleton($reflection)) {
             $this->set($className, $instance);
         }
 
@@ -385,45 +385,6 @@ class Container
         }
 
         return $this->reflectionClasses[$className];
-    }
-
-    /**
-     * Checks wheter a class has the `#[Lazy]` attribute.
-     *
-     * @param ReflectionClass $reflectionClass Class reflection.
-     *
-     * @return bool If class is lazy.
-     */
-    private function isLazy(ReflectionClass $reflectionClass): bool
-    {
-        return $this->hasAttribute($reflectionClass, Lazy::class);
-    }
-
-    /**
-     * Checks wheter a class has the `#[Singleton]` attribute.
-     *
-     * @param ReflectionClass $reflectionClass Class reflection.
-     *
-     * @return bool If class is singleton.
-     */
-    private function isSingleton(ReflectionClass $reflectionClass): bool
-    {
-        return $this->hasAttribute($reflectionClass, Singleton::class);
-    }
-
-    /**
-     * Checks wheter a class has an attribute.
-     *
-     * @param ReflectionClass $reflectionClass Class reflection.
-     * @param string $attributeClass
-     *
-     * @return bool If class has the attribute.
-     */
-    private function hasAttribute(ReflectionClass $reflectionClass, string $attributeClass): bool
-    {
-        $attributes = $reflectionClass->getAttributes($attributeClass);
-
-        return count($attributes) > 0;
     }
 
     /**
@@ -514,8 +475,9 @@ class Container
         object $classInstance,
     ): void {
         foreach ($reflectionClass->getProperties() as $reflectionProperty) {
-            $skipsInitialization =
-                count($reflectionProperty->getAttributes(LazyInitializationSkipped::class)) > 0;
+            $skipsInitialization = AttributeHelper::hasLazyInitializationSkipped(
+                $reflectionProperty,
+            );
 
             if ($skipsInitialization) {
                 $reflectionProperty->skipLazyInitialization($classInstance);
@@ -546,7 +508,7 @@ class Container
 
         foreach ($constructParams as $param) {
             $paramType = $param->getType()->getName();
-            $injectAttribute = $param->getAttributes(Inject::class)[0] ?? null;
+            $injectAttribute = AttributeHelper::getInject($param);
 
             if ($injectAttribute !== null) {
                 $arguments[] = $this->getInjectableParamValue($param, $injectAttribute);
@@ -564,7 +526,7 @@ class Container
                 );
             }
 
-            if ($this->isClassOrInterface($paramType)) {
+            if (TypeHelper::isClassOrInterface($paramType)) {
                 $arguments[] = $this->get($paramType);
                 continue;
             }
@@ -599,7 +561,7 @@ class Container
         }
 
         $paramType = $param->getType()->getName();
-        $valueType = $this->normalizeType(gettype($value));
+        $valueType = TypeHelper::getNormalizedTypeOf($value);
 
         if ($paramType !== $valueType) {
             throw new ContainerException(
@@ -628,7 +590,7 @@ class Container
         ReflectionParameter $param,
         string $definition,
     ): ?object {
-        if ($this->isClassOrInterface($definition)) {
+        if (TypeHelper::isClassOrInterface($definition)) {
             return $this->get($definition);
         }
 
@@ -639,22 +601,6 @@ class Container
         throw new ContainerException(
             "Container cannot inject \"{$definition}\". It is null and parameter is not nullable.",
         );
-    }
-
-    /**
-     * Normalizes a type (i.e. converts "integer" to "int").
-     *
-     * @param string $type Type.
-     */
-    private function normalizeType(string $type): string
-    {
-        return match ($type) {
-            'integer' => 'int',
-            'boolean' => 'bool',
-            'double' => 'float',
-            'NULL' => 'null',
-            default => $type,
-        };
     }
 
     /**
@@ -670,22 +616,10 @@ class Container
             return false;
         }
 
-        if ($this->isClassOrInterface($param->getType()->getName())) {
+        if (TypeHelper::isClassOrInterface($param->getType()->getName())) {
             return $this->skipNullableClassParams;
         }
 
         return $this->skipNullableValueParams;
-    }
-
-    /**
-     * Checks if the given type is a class or an interface.
-     *
-     * @param string $type Type.
-     *
-     * @return bool If type is a class or an interface.
-     */
-    private function isClassOrInterface(string $type): bool
-    {
-        return class_exists($type) || interface_exists($type);
     }
 }

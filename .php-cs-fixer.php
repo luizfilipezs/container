@@ -85,7 +85,7 @@ return (new Config())
         'unary_operator_spaces' => true,
         'phpdoc_add_missing_param_annotation' => ['only_untyped' => false],
         'phpdoc_indent' => true,
-        'phpdoc_order' => ['order' => ['template', 'param', 'throws', 'return']],
+        'phpdoc_order' => ['order' => ['template', 'param', 'return', 'throws']],
         'phpdoc_param_order' => true,
         'phpdoc_single_line_var_spacing' => true,
         'phpdoc_types_order' => ['sort_algorithm' => 'none', 'null_adjustment' => 'always_last'],
