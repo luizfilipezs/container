@@ -6,9 +6,14 @@ namespace Luizfilipezs\Container;
 
 use Luizfilipezs\Container\Enums\ContainerEvent;
 use Luizfilipezs\Container\Events\ContainerEventHandler;
-use Luizfilipezs\Container\Exceptions\ContainerException;
-use Luizfilipezs\Container\Exceptions\ContainerNotFoundException;
-use Luizfilipezs\Container\Helpers\{AttributeHelper, TypeHelper};
+use Luizfilipezs\Container\Exceptions\{
+    ContainerException,
+    ContainerNotFoundException,
+};
+use Luizfilipezs\Container\Helpers\{
+    AttributeHelper,
+    TypeHelper,
+};
 use Luizfilipezs\Container\Interfaces\ContainerEventHandlerInterface;
 use Psr\Container\ContainerInterface;
 use ReflectionAttribute;
@@ -23,7 +28,7 @@ class Container implements ContainerInterface
     /**
      * Container event handler.
      */
-    private(set) public ContainerEventHandlerInterface $eventHandler;
+    public private(set) ContainerEventHandlerInterface $eventHandler;
 
     /**
      * Class definitions.
@@ -71,10 +76,10 @@ class Container implements ContainerInterface
      *
      * @param class-string<T> $className Class name.
      *
+     *
+     * @return T Class instance.
      * @throws ContainerNotFoundException No entry was found for the given identifier.
      * @throws ContainerException If the definition is invalid.
-     * 
-     * @return T Class instance.
      *
      */
     public function get(string $className): mixed
@@ -164,10 +169,10 @@ class Container implements ContainerInterface
      * Gets a value definition.
      *
      * @param string $identifier Value identifier.
-     * 
-     * @throws ContainerNotFoundException No entry was found for the given identifier.
+     *
      *
      * @return mixed Value definition.
+     * @throws ContainerNotFoundException No entry was found for the given identifier.
      */
     public function getValue(string $identifier): mixed
     {
@@ -246,8 +251,8 @@ class Container implements ContainerInterface
      *
      * @param class-string<T> $className Class name.
      *
-     * @throws ContainerException If definition is invalid or does not exist.
      * @return T Class instance.
+     * @throws ContainerException If definition is invalid or does not exist.
      *
      */
     private function getFromDefinition(string $className): mixed
@@ -279,8 +284,8 @@ class Container implements ContainerInterface
      * @param class-string<T> $className Class name.
      * @param string $definition Class string definition.
      *
-     * @throws ContainerException If class string definition is invalid.
      * @return T Class instance.
+     * @throws ContainerException If class string definition is invalid.
      *
      */
     private function getFromClassStringDefinition(string $className, string $definition): mixed
@@ -310,8 +315,8 @@ class Container implements ContainerInterface
      * @param class-string<T> $className Class name.
      * @param callable(): T $definition Callable that returns a class instance.
      *
-     * @throws ContainerException If the callable does not return an instance of the expected class.
      * @return T Class instance.
+     * @throws ContainerException If the callable does not return an instance of the expected class.
      *
      */
     private function getFromCallableDefinition(string $className, callable $definition): mixed
@@ -335,8 +340,8 @@ class Container implements ContainerInterface
      * @param class-string<T> $className Class name.
      * @param object $definition Class instance definition.
      *
-     * @throws ContainerException If the object definition is not an instance of the same class.
      * @return T Class instance.
+     * @throws ContainerException If the object definition is not an instance of the same class.
      *
      */
     private function getFromObjectDefinition(string $className, object $definition): mixed
@@ -357,8 +362,8 @@ class Container implements ContainerInterface
      *
      * @param class-string<T> $className Class name.
      *
-     * @throws \ReflectionException If the class does not exist.
      * @return T Class instance.
+     * @throws \ReflectionException If the class does not exist.
      *
      */
     private function getUndefined(string $className): mixed
@@ -380,8 +385,8 @@ class Container implements ContainerInterface
      *
      * @param string $className Class name.
      *
-     * @throws \ReflectionException If the class does not exist.
      * @return ReflectionClass Class reflection.
+     * @throws \ReflectionException If the class does not exist.
      *
      */
     private function getReflectionClass(string $className): ReflectionClass
@@ -496,9 +501,9 @@ class Container implements ContainerInterface
      *
      * @param ReflectionClass $reflectionClass Class reflection.
      *
+     * @return mixed[] Constructor arguments.
      * @throws ContainerException If constructor arguments are invalid (i.e. refer to the same
      * entity, has no injection configuration or does not exist).
-     * @return mixed[] Constructor arguments.
      *
      */
     private function createConstructorArgs(ReflectionClass $reflectionClass): array
@@ -551,8 +556,8 @@ class Container implements ContainerInterface
      * @param ReflectionParameter $param Parameter reflection.
      * @param ReflectionAttribute $injectAttribute `Inject` attribute reflection.
      *
-     * @throws ContainerException If definition is invalid or does not exist.
      * @return mixed Parameter value.
+     * @throws ContainerException If definition is invalid or does not exist.
      *
      */
     private function getInjectableParamValue(

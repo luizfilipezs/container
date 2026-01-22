@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Luizfilipezs\Container\Tests\Unit;
 
 use Luizfilipezs\Container\Container;
-use Luizfilipezs\Container\Enums\{ContainerEvent};
-use Luizfilipezs\Container\Exceptions\ContainerException;
-use Luizfilipezs\Container\Exceptions\ContainerNotFoundException;
+use Luizfilipezs\Container\Enums\ContainerEvent;
+use Luizfilipezs\Container\Exceptions\{
+    ContainerException,
+    ContainerNotFoundException,
+};
 use Luizfilipezs\Container\Tests\Data\{
     EmptyObject,
     ObjectWithDeepDependencies,
@@ -30,7 +32,10 @@ use Luizfilipezs\Container\Tests\Data\Lazy\{
     LazyObjectWithSkippedAttribute,
     LazyObjectWithoutConstructor,
 };
-use Luizfilipezs\Container\Tests\Data\Singleton\{EmptySingleton, SingletonObject};
+use Luizfilipezs\Container\Tests\Data\Singleton\{
+    EmptySingleton,
+    SingletonObject,
+};
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
