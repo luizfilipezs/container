@@ -279,8 +279,7 @@ At the top of the Github repository page, click the **Fork** button. Then clone 
 ### Installing dependencies
 
 ```bash
-npm install # install Prettier package
-composer update # install composer dependencies
+composer install
 ```
 
 ### Testing
