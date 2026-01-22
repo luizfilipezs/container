@@ -7,8 +7,10 @@ namespace Luizfilipezs\Container;
 use Luizfilipezs\Container\Enums\ContainerEvent;
 use Luizfilipezs\Container\Events\ContainerEventHandler;
 use Luizfilipezs\Container\Exceptions\ContainerException;
+use Luizfilipezs\Container\Exceptions\ContainerNotFoundException;
 use Luizfilipezs\Container\Helpers\{AttributeHelper, TypeHelper};
 use Luizfilipezs\Container\Interfaces\ContainerEventHandlerInterface;
+use Psr\Container\ContainerInterface;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionParameter;
@@ -16,7 +18,7 @@ use ReflectionParameter;
 /**
  * Dependency injection container.
  */
-class Container
+class Container implements ContainerInterface
 {
     /**
      * Container event handler.
@@ -69,7 +71,9 @@ class Container
      *
      * @param class-string<T> $className Class name.
      *
-     * @throws ContainerException If instance cannot be created.
+     * @throws ContainerNotFoundException No entry was found for the given identifier.
+     * @throws ContainerException If the definition is invalid.
+     * 
      * @return T Class instance.
      *
      */
@@ -82,7 +86,7 @@ class Container
         }
 
         if ($this->strict) {
-            throw new ContainerException("{$className} has no definition.");
+            throw new ContainerNotFoundException("{$className} has no definition.");
         }
 
         if (!class_exists($className)) {
@@ -160,6 +164,8 @@ class Container
      * Gets a value definition.
      *
      * @param string $identifier Value identifier.
+     * 
+     * @throws ContainerNotFoundException No entry was found for the given identifier.
      *
      * @return mixed Value definition.
      */
@@ -168,7 +174,7 @@ class Container
         $value = $this->valueDefinitions[$identifier] ?? null;
 
         if ($value === null && $this->strict) {
-            throw new ContainerException("{$identifier} has no definition.");
+            throw new ContainerNotFoundException("{$identifier} has no definition.");
         }
 
         return $value;

@@ -7,6 +7,7 @@ namespace Luizfilipezs\Container\Tests\Unit;
 use Luizfilipezs\Container\Container;
 use Luizfilipezs\Container\Enums\{ContainerEvent};
 use Luizfilipezs\Container\Exceptions\ContainerException;
+use Luizfilipezs\Container\Exceptions\ContainerNotFoundException;
 use Luizfilipezs\Container\Tests\Data\{
     EmptyObject,
     ObjectWithDeepDependencies,
@@ -187,7 +188,7 @@ final class ContainerTest extends TestCase
         $container = new Container(strict: true);
 
         // assert exception when getting undefined class
-        $this->expectException(ContainerException::class);
+        $this->expectException(ContainerNotFoundException::class);
         $this->expectExceptionMessage(ObjectWithoutConstructor::class . ' has no definition.');
 
         // execute
@@ -336,7 +337,7 @@ final class ContainerTest extends TestCase
     {
         $container = new Container(strict: true);
 
-        $this->expectException(ContainerException::class);
+        $this->expectException(ContainerNotFoundException::class);
         $this->expectExceptionMessage('KEY has no definition.');
 
         $container->getValue('KEY');
@@ -347,7 +348,7 @@ final class ContainerTest extends TestCase
         $container = new Container(strict: true);
         $container->setValue('KEY', null);
 
-        $this->expectException(ContainerException::class);
+        $this->expectException(ContainerNotFoundException::class);
         $this->expectExceptionMessage('KEY has no definition.');
 
         $container->getValue('KEY');
