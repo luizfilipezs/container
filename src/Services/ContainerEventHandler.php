@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Luizfilipezs\Container\Events;
+namespace Luizfilipezs\Container\Services;
 
 use Luizfilipezs\Container\Enums\ContainerEvent;
 use Luizfilipezs\Container\Interfaces\ContainerEventHandlerInterface;

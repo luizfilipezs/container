@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Luizfilipezs\Container;
 
 use Luizfilipezs\Container\Enums\ContainerEvent;
-use Luizfilipezs\Container\Events\ContainerEventHandler;
 use Luizfilipezs\Container\Exceptions\{
     ContainerException,
     ContainerNotFoundException,
@@ -15,6 +14,7 @@ use Luizfilipezs\Container\Helpers\{
     TypeHelper,
 };
 use Luizfilipezs\Container\Interfaces\ContainerEventHandlerInterface;
+use Luizfilipezs\Container\Services\ContainerEventHandler;
 use Psr\Container\ContainerInterface;
 use ReflectionAttribute;
 use ReflectionClass;

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Luizfilipezs\Container\Tests\Unit\Events;
+namespace Luizfilipezs\Container\Tests\Unit\Services;
 
 use Luizfilipezs\Container\Enums\ContainerEvent;
-use Luizfilipezs\Container\Events\ContainerEventHandler;
+use Luizfilipezs\Container\Services\ContainerEventHandler;
 use PHPUnit\Framework\TestCase;
 
 final class ContainerEventHandlerTest extends TestCase
