@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.4
+
+- Implement psr/container interfaces.
+
 ## 1.0.3
 
 - Allow chaining `set` and `setValue` methods in `Container` class.
