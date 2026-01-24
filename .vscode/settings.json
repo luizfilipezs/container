@@ -10,5 +10,10 @@
   },
   "intelephense.format.enable": true,
   "intelephense.diagnostics.enable": true,
-  "intelephense.diagnostics.typeErrors": true
+  "intelephense.diagnostics.typeErrors": true,
+  "[php]": {
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false
+  }
 }
