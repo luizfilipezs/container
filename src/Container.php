@@ -31,6 +31,11 @@ class Container implements ContainerInterface
     public private(set) ContainerEventHandlerInterface $eventHandler;
 
     /**
+     * Reflection class storage. Used to cache `ReflectionClass` instances.
+     */
+    private ReflectionClassStorageInterface $reflectionClasssStorage;
+
+    /**
      * Class definitions.
      *
      * @var array<string,class-string,callable,object>
@@ -43,8 +48,6 @@ class Container implements ContainerInterface
      * @var array<string,mixed>
      */
     private array $valueDefinitions = [];
-
-    private ReflectionClassStorageInterface $reflectionClasssStorage;
 
     /**
      * Constructor.
