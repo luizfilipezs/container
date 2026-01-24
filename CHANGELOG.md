@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.5
+
+- Update dependencies.
+- Update `.vscode/settings.json` with PHP editor preferences.
+- Rename namespace `Events` to `Services`.
+
+Container usage remains the same. 
+
 ## 1.0.4
 
 - Implement psr/container interfaces.
