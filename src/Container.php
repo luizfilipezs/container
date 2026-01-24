@@ -13,8 +13,8 @@ use Luizfilipezs\Container\Helpers\{
     AttributeHelper,
     TypeHelper,
 };
-use Luizfilipezs\Container\Interfaces\ContainerEventHandlerInterface;
-use Luizfilipezs\Container\Services\ContainerEventHandler;
+use Luizfilipezs\Container\Interfaces\{ContainerEventHandlerInterface, ReflectionClassStorageInterface};
+use Luizfilipezs\Container\Services\{ContainerEventHandler, ReflectionClassStorage};
 use Psr\Container\ContainerInterface;
 use ReflectionAttribute;
 use ReflectionClass;
@@ -44,12 +44,7 @@ class Container implements ContainerInterface
      */
     private array $valueDefinitions = [];
 
-    /**
-     * Reflection classes cache.
-     *
-     * @var array<class-string,ReflectionClass>
-     */
-    private array $reflectionClasses = [];
+    private ReflectionClassStorageInterface $reflectionClasssStorage;
 
     /**
      * Constructor.
@@ -67,6 +62,7 @@ class Container implements ContainerInterface
         public readonly bool $skipNullableValueParams = true,
     ) {
         $this->eventHandler = new ContainerEventHandler();
+        $this->reflectionClasssStorage = new ReflectionClassStorage();
     }
 
     /**
@@ -368,7 +364,7 @@ class Container implements ContainerInterface
      */
     private function getUndefined(string $className): mixed
     {
-        $reflection = $this->getReflectionClass($className);
+        $reflection = $this->reflectionClasssStorage->getOrAdd($className);
         $instance = AttributeHelper::hasLazy($reflection)
             ? $this->instantiateLazy($reflection)
             : $this->instantiate($reflection);
@@ -378,24 +374,6 @@ class Container implements ContainerInterface
         }
 
         return $instance;
-    }
-
-    /**
-     * Gets a class reflection from cache or creates a new one.
-     *
-     * @param string $className Class name.
-     *
-     * @return ReflectionClass Class reflection.
-     * @throws \ReflectionException If the class does not exist.
-     *
-     */
-    private function getReflectionClass(string $className): ReflectionClass
-    {
-        if (!isset($this->reflectionClasses[$className])) {
-            $this->reflectionClasses[$className] = new ReflectionClass($className);
-        }
-
-        return $this->reflectionClasses[$className];
     }
 
     /**
