@@ -367,7 +367,7 @@ class Container implements ContainerInterface
      */
     private function getUndefined(string $className): mixed
     {
-        $reflection = $this->reflectionClassStorage->getOrAdd($className);
+        $reflection = $this->reflectionClassStorage->getOrCreate($className);
         $instance = AttributeHelper::hasLazy($reflection)
             ? $this->instantiateLazy($reflection)
             : $this->instantiate($reflection);

@@ -18,32 +18,32 @@ final class ReflectionClassStorageTest extends TestCase
         $this->storage = new ReflectionClassStorage();
     }
 
-    public function testAddStoresAndReturnsReflectionClass(): void
+    public function testCreateStoresAndReturnsReflectionClass(): void
     {
-        $reflection = $this->storage->add(\stdClass::class);
+        $reflection = $this->storage->create(\stdClass::class);
 
         $this->assertInstanceOf(ReflectionClass::class, $reflection);
         $this->assertSame(\stdClass::class, $reflection->getName());
         $this->assertTrue($this->storage->has(\stdClass::class));
     }
 
-    public function testAddThrowsExceptionWhenClassIsAlreadyAdded(): void
+    public function testCreateThrowsExceptionWhenClassIsAlreadyCreateed(): void
     {
-        $this->storage->add(\stdClass::class);
+        $this->storage->create(\stdClass::class);
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(\stdClass::class . ' has already been added.');
+        $this->expectExceptionMessage(\stdClass::class . ' has already been createed.');
 
-        $this->storage->add(\stdClass::class);
+        $this->storage->create(\stdClass::class);
     }
 
     public function testGetReturnsReflectionClassWhenExists(): void
     {
-        $added = $this->storage->add(\stdClass::class);
+        $createed = $this->storage->create(\stdClass::class);
 
         $retrieved = $this->storage->get(\stdClass::class);
 
-        $this->assertSame($added, $retrieved);
+        $this->assertSame($createed, $retrieved);
     }
 
     public function testGetReturnsNullWhenClassDoesNotExist(): void
@@ -55,7 +55,7 @@ final class ReflectionClassStorageTest extends TestCase
 
     public function testHasReturnsTrueWhenClassExists(): void
     {
-        $this->storage->add(\stdClass::class);
+        $this->storage->create(\stdClass::class);
 
         $this->assertTrue(
             $this->storage->has(\stdClass::class),
@@ -69,19 +69,19 @@ final class ReflectionClassStorageTest extends TestCase
         );
     }
 
-    public function testGetOrAddAddsAndReturnsReflectionClassWhenNotExists(): void
+    public function testGetOrCreateCreatesAndReturnsReflectionClassWhenNotExists(): void
     {
-        $reflection = $this->storage->getOrAdd(\stdClass::class);
+        $reflection = $this->storage->getOrCreate(\stdClass::class);
 
         $this->assertInstanceOf(ReflectionClass::class, $reflection);
         $this->assertSame(\stdClass::class, $reflection->getName());
         $this->assertTrue($this->storage->has(\stdClass::class));
     }
 
-    public function testGetOrAddReturnsExistingReflectionClassWhenAlreadyAdded(): void
+    public function testGetOrCreateReturnsExistingReflectionClassWhenAlreadyCreateed(): void
     {
-        $first = $this->storage->add(\stdClass::class);
-        $second = $this->storage->getOrAdd(\stdClass::class);
+        $first = $this->storage->create(\stdClass::class);
+        $second = $this->storage->getOrCreate(\stdClass::class);
 
         $this->assertSame($first, $second);
     }

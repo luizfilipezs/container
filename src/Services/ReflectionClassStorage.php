@@ -10,7 +10,7 @@ final class ReflectionClassStorage implements ReflectionClassStorageInterface
 {
     private array $reflectionClasses = [];
 
-    public function add(string $className): \ReflectionClass
+    public function create(string $className): \ReflectionClass
     {
         if ($this->has($className)) {
             throw new \InvalidArgumentException("{$className} has already been added.");
@@ -27,11 +27,11 @@ final class ReflectionClassStorage implements ReflectionClassStorageInterface
         return $this->reflectionClasses[$className];
     }
 
-    public function getOrAdd(string $className): \ReflectionClass
+    public function getOrCreate(string $className): \ReflectionClass
     {
         return $this->has($className) ?
             $this->get($className) :
-            $this->add($className);
+            $this->create($className);
     }
 
     public function has(string $className): bool
