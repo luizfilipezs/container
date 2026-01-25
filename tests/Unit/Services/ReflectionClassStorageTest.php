@@ -32,7 +32,7 @@ final class ReflectionClassStorageTest extends TestCase
         $this->storage->create(\stdClass::class);
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(\stdClass::class . ' has already been createed.');
+        $this->expectExceptionMessage(\stdClass::class . ' has already been added.');
 
         $this->storage->create(\stdClass::class);
     }
