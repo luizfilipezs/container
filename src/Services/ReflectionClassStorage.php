@@ -10,6 +10,9 @@ final class ReflectionClassStorage implements ReflectionClassStorageInterface
 {
     private array $reflectionClasses = [];
 
+    /**
+     * {@inheritdoc}
+     */
     public function create(string $className): \ReflectionClass
     {
         if ($this->has($className)) {
@@ -22,11 +25,17 @@ final class ReflectionClassStorage implements ReflectionClassStorageInterface
         return $reflectionClass;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function get(string $className): ?\ReflectionClass
     {
         return $this->reflectionClasses[$className];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getOrCreate(string $className): \ReflectionClass
     {
         return $this->has($className) ?
@@ -34,6 +43,9 @@ final class ReflectionClassStorage implements ReflectionClassStorageInterface
             $this->create($className);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function has(string $className): bool
     {
         return isset($this->reflectionClasses[$className]);
