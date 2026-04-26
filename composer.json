@@ -31,6 +31,6 @@
       "Luizfilipezs\\Container\\Tests\\": "tests/"
     }
   },
-  "minimum-stability": "dev",
+  "minimum-stability": "stable",
   "prefer-stable": true
 }
