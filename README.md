@@ -1,6 +1,15 @@
-# luizfilipezs/container
-
-This library implements a dependency injection system.
+<h1 align="center">
+luizfilipezs/container
+</h1>
+<p align="center">
+A PHP dependency injection container with native lazy construction support.
+<p>
+<p align="center">
+  <a href="https://packagist.org/packages/luizfilipezs/container">
+    <img src="https://img.shields.io/packagist/v/luizfilipezs/container" alt="Latest Version">
+  </a>
+  <img src=https://img.shields.io/packagist/php-v/luizfilipezs/container>
+<p>
 
 ## Minimum requirements
 
@@ -8,8 +17,6 @@ This library implements a dependency injection system.
 - Composer
 
 ## Installation
-
-Inside your project folder, run:
 
 ```bash
 composer require luizfilipezs/container

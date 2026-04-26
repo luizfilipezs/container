@@ -1,12 +1,12 @@
 {
   "name": "luizfilipezs/container",
-  "description": "Dependency injection container",
+  "description": "A PHP dependency injection container with native lazy construction support.",
   "type": "library",
   "license": "MIT",
   "authors": [
     {
       "name": "Luiz Filipe da Silva",
-      "email": "filipeluiz.bs@gmail.com"
+      "email": "luizfilipezs@proton.me"
     }
   ],
   "scripts": {
