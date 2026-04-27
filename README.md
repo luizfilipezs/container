@@ -8,7 +8,7 @@ A PHP dependency injection container with native lazy construction support.
   <a href="https://packagist.org/packages/luizfilipezs/container">
     <img src="https://img.shields.io/packagist/v/luizfilipezs/container" alt="Latest Version">
   </a>
-  <img src=https://img.shields.io/packagist/php-v/luizfilipezs/container>
+  <img src="https://img.shields.io/packagist/php-v/luizfilipezs/container" alt="PHP Version">
 <p>
 
 ## Minimum requirements
